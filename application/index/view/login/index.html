@@ -1,0 +1,43 @@
+{extend name="public/base" /}
+
+{block name="head-js" }  
+
+{/block}
+
+{block name="content"}
+		<div class="container">
+		
+			<form action="{:url('login')}" method="post">
+				<div class="row">
+					<div class="form-gournd">
+						 <label class="col-md-2 text-right" for="userName" >用户名 : </label>
+						 <div class="col-sm-4">
+						 	<input class="form-control col-md-3" name="username" type="text"  id="userName" placeholder="用户名">
+						 </div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="form-gournd">
+						 <label class="col-md-2 text-right" for="userName" >密码 : </label>
+						 <div class="col-sm-4">
+						 	<input class="form-control col-md-3" name="password" type="password"  id="userName" placeholder="输入密码">
+						 </div>
+					</div>			
+				</div>
+				<div class="row">
+					<div class="form-gournd text-right col-md-3" >
+						 <input class="btn btn-primary" type="submit" value="登录"/>   
+					</div>
+					<div class="form-gournd text-left col-md-1" >
+						<button class="btn btn-default" type="button">注册</button>			
+					</div>
+					<div class="form-gournd text-left col-md-1" >
+						<input class="form-control" type="text" name="verify" placeholder="输入验证码" />			
+					</div>
+					<div class="form-gournd text-left col-md-2" >
+						<img id="verify" src="{:captcha_src()}" onclick="$(this).attr('src','{:captcha_src()}/rand/' + Math.random());" alt="验证码" />						
+					</div>
+				</div>
+			</form>
+		</div>
+{/block}

@@ -1,0 +1,139 @@
+{extend name="Public:base" /}
+{block name="head-js"}
+<script type="text/javascript">
+	function getInfo(id) {
+		$.ajax({
+			url:"{:url('getInfo')}",
+			type:'post' ,
+			data:'id='+id,
+			success:function(re) {
+				console.log(re);
+				if(re){
+					$('.modal-body').append(re)
+				} else {
+					alert('操作失败,请刷新重试');
+				}
+			}
+		})
+	}
+	
+</script>
+{/block}
+
+{block name="content"}
+    <div class="row">
+        <div class="col-lg-12">
+            <h3 class="page-header"><em class="glyphicon glyphicon-cloud-upload"></em> 
+            {$title} 
+            <span class="xyh-pos">
+                <i class="glyphicon glyphicon-log-out"></i>                
+            </span>         
+            </h3>
+            
+        </div>
+        
+    </div>
+
+    <div class="row margin-botton">
+        <div class="col-sm-6 column">
+            <div class="btn-group btn-group-md">
+            {if condition='request()->action() eq "index"'}
+                <button class="btn btn-primary" type="button" onclick="goUrl('{:url('add')}')"><em class="glyphicon glyphicon-plus-sign"></em> 添加成绩</button>                             
+                <button class="btn btn-default" type="button" onclick="doConfirmBatch('{:url('del')}', '确实要删除选择项吗？')"><em class="glyphicon glyphicon-remove-circle"></em> 删除</button>                 
+                <button class="btn btn-default" type="button" onclick="goUrl('{:url('trach')}')"><em class="glyphicon glyphicon-trash"></em> 回收站</button>
+            {else/}
+                <button class="btn btn-primary" type="button" onclick="goUrl('{:url('index')}')"><em class="glyphicon glyphicon-chevron-left"></em> 返回</button>
+                 <button class="btn btn-default" type="button" onclick="doGoBatch('{:url('restore')}')"><em class="glyphicon glyphicon-retweet"></em> 还原</button>		           
+                 <button class="btn btn-default" type="button" onclick="doConfirmBatch('{:url('clear')}', '确实要彻底删除选择项吗？')"><em class="glyphicon glyphicon-remove-circle"></em> 彻底删除</button> 
+            {/if}
+            </div>
+        </div>
+        <div class="col-sm-6 text-right">
+            {if condition='request()->action() eq "index"'}
+                <form class="form-inline" method="post" action="{:url('index')}">
+                  <select name="searClass" class="form-control" >
+                    <option value="0">选择班级</option>
+                  	{volist name="class" id="v"}
+                  	<option value="{$v.id}" {if condition="$searClass eq $v['id']"}selected="selected"{/if} >{$v.name}</option>
+                  	{/volist}
+                  </select>
+                  <div class="form-group">
+                    <label class="sr-only" for="inputKeyword">关键字</label>
+                    <input type="text" class="form-control" name="keyword" id="inputKeyword" placeholder="关键字" value="{$keyword}">
+                  </div>
+                  <button type="submit" class="btn btn-default">搜索</button>
+                </form>
+            {/if}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <form action="" method="post" id="form_do" name="form_do">
+                <div class="table-responsive">
+                    <table class="table table-hover xyh-table-bordered-out">
+                        <thead>
+                            <tr class="active">
+                                <th><input type="checkbox" id="check"></th>
+                                <th>编号</th>
+                                <th>姓名</th>
+                                <th>班级</th>
+                                <th>语文</th>
+                                <th>数学</th> 
+                                <th>英语</th>
+                                <th>类型</th>
+                                <td>考试时间</td>
+                                <th class="text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {foreach name='list' item='v'}
+                        <tr>
+                            <td><input type="checkbox" name="key[]" value="{$v.id}"></td>
+                            <td>{$v.id}</td>
+                            <td>{$v.name}</td>
+                            <td>{$v.c_name}</td>
+                            <td>{$v.language}</td>
+                            <td>{$v.math}</td>
+                            <td>{$v.english}</td>
+                            <td>{$type[$v['type']]}</td> 
+                            <td>{$v.create_time}</td>                                  
+                            <td class="text-right">
+                            {if condition='request()->action() eq "index"'}
+                            <a href="{:url('edit',array('id' => $v['id']), '')}" class="label label-success">编辑</a>
+                            <a href="javascript:;" onclick="toConfirm('{:url('del',array('id' => $v['id']), '')}', '确实要删除吗？')" class="label label-danger">删除</a>
+                            {else/}
+                            <a href="{:url('restore',array('id' => $v['id']))}" class="label label-info">还原</a>
+                            <a href="javascript:;" onclick="toConfirm('{:url('clear',array('id' => $v['id']), '')}', '确实要彻底删除吗？')" class="label label-danger">彻底删除</a>
+                            {/if}
+                            </td>
+                        </tr>
+                        {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+			{if condition="!empty($searClass)" }
+			<div class="row">
+				<div class="col-md-12 column">
+					&nbsp;&nbsp;<span class="label label-primary">{$classCount.name}</span>
+					&nbsp;&nbsp;<span class="label label-primary">总人数 : {$classCount.count}</span>
+					&nbsp;&nbsp;<span class="label label-primary">语文平均成绩 : {$classCount.language|round="2"}</span>
+					&nbsp;&nbsp;<span class="label label-primary">数字平均成绩 : {$classCount.math|round="2"}</span>
+					&nbsp;&nbsp;<span class="label label-primary">英文平均成绩 : {$classCount.english|round="2"}</span>
+				</div>		
+			</div>
+			{/if}
+            <div class="row clearfix">
+                <div class="col-md-12 column">
+                    <div class="xyh-page">
+                        {$list|raw}
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+
+{/block}

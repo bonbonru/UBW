@@ -1,0 +1,162 @@
+{extend name="public:base" /}
+{block name="head-js"}
+<script type="text/javascript" src="/public/static/editor/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" src="/public/static/editor/ueditor/ueditor.all.min.js"></script>
+<script type="text/javascript">
+$(function(){
+    var ue = UE.getEditor('inputContent',{
+        serverUrl :"{:url('Public/editorMethod')}"
+    });
+})
+</script>
+
+<script type="text/javascript" src="/public/static/js/js/calendar.config.js"></script>
+<script type="text/javascript" src="/public/static/js/js//XYHUploader/XYHUploader.js"></script>
+
+<script type="text/javascript">
+$(function () {
+	//缩略图上传
+	$('#litpic').XYHUploader({
+		sfile:"img1", 
+		furl:"{:url('Public/upload',array('img_flag' => 1))}", 
+		burl:"{:url('Public/browseFile', array('stype' => 'picture'))}",
+		thide: false,
+		thumflag: true
+	});
+
+	
+});
+
+function getStudent() {
+	var id = $('#selectClass').val();
+	$.ajax({
+		url:"{:url('getStudent')}",
+		type:'post' ,
+		data:'id='+id,
+		dataType:'json',
+		success:function(re) {
+			console.log(re); 	
+			if(re.code == 1){
+				var html = "";
+				if(re.data != null){
+					$.each(re.data,function(key,val){
+						html += "<option value='"+val['id']+"' > "+val['name']+"</option>";
+					})					
+				}
+				$('#selectStudent').empty();
+				$('#selectStudent').append(html);
+			} else {
+				alert(re.message);
+				$('#selectStudent').empty();
+			}
+		}
+	})
+}
+
+
+</script>
+	
+{/block}
+
+{block name="content"}
+	<div class="row">
+		<div class="col-lg-12">
+			<h3 class="page-header"><em class="glyphicon glyphicon-cloud-upload"></em> 
+			{$title} 
+		    </h3>
+		</div>
+		
+	</div>
+
+
+	<div class="row">
+		<div class="col-lg-12">
+
+				<form method='post' class="form-horizontal" id="form_do" name="form_do" action="{:url('edit')}">											
+
+					<div class="form-group">
+						<label for="inputName" class="col-sm-2 control-label">类型:</label>
+						<div class="col-sm-2">
+							<select name="type" class="form-control">
+								{volist name="type" id="v" key="k"}
+								<option value="{$k}" {if condition="$score['type'] eq $k"} selected="selected" {/if} >{$v}</option>
+								{/volist}
+							</select>			
+						</div>					
+					</div>					
+
+					<div class="form-group">
+						<label for="inputPublishtime" class="col-sm-2 control-label">考试时间:</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control" name="create_time" id="inputPublishtime" value="{$score.create_time}">
+			                <script type="text/javascript">
+			                    Calendar.setup({
+			                        weekNumbers: true,
+			                        inputField : "inputPublishtime",
+			                        trigger    : "inputPublishtime",
+			                        dateFormat: "%Y-%m-%d",
+			                        showTime: true,
+			                        minuteStep: 1,
+			                        onSelect   : function() {this.hide();}
+			                    });
+			                </script>						
+						</div>
+					</div>
+					
+					<div class="form-group">
+						<label for="inputName" class="col-sm-2 control-label">选择班级:</label>
+						<div class="col-sm-2">
+							<select id="selectClass" name="class_id" class="form-control" onchange="getStudent()">
+								{volist name="class" id="v"}
+								<option value="{$v.id}" {if condition="$score['c_id'] eq $v['id']"} selected="selected" {/if} >{$v.name}</option>							
+								{/volist}
+							</select>			
+						</div>	
+						<label for="inputName" class="col-sm-1 control-label">选择学生:</label>
+						<div class="col-sm-2">
+							<select id="selectStudent" name="student_id" class="form-control">
+								{volist name="student" id="v"}
+								<option value="{$v.id}" {if condition="$score['s_id'] eq $v['id']"} selected="selected" {/if} >{$v.name}</option>
+								{/volist}
+							</select>			
+						</div>					
+					</div>	
+					
+
+					<div class="form-group">
+						<label for="inputlanguage" class="col-sm-2 control-label">语文</label>
+						<div class="col-sm-2">
+							<input type="number" value="{$score['language']}" name="language" id="inputlanguage"  class="form-control" placeholder="语文成绩" min=0 max="100"/>	
+						</div>	
+					</div>
+
+					<div class="form-group">
+						<label for="inputmath" class="col-sm-2 control-label">数学</label>	
+						<div class="col-sm-2">
+							<input type="number" value="{$score['math']}" name="math" id="inputmath"  class="form-control" placeholder="数学成绩" min=0 max="100"/>	
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="inputenglish" class="col-sm-2 control-label">英语</label>	
+						<div class="col-sm-2">
+							<input type="number" value="{$score['english']}" name="english" id="inputenglish" class="form-control" placeholder="英语成绩" min=0 max="100"/>	
+						</div>
+					</div>
+					<input type="hidden" name="id" value={$score['id']} />
+					<div class="row margin-botton-large">
+						<div class="col-sm-offset-2 col-sm-9">							
+							<div class="btn-group">
+								<button type="submit" class="btn btn-primary"> <i class="glyphicon glyphicon-saved"></i>
+									保存
+								</button>
+								<button type="button" onclick="goUrl('{:url('index')}')" class="btn btn-default"> <i class="glyphicon glyphicon-chevron-left"></i>
+									返回
+								</button>
+							</div>
+						</div>
+					</div>
+				</form>
+	
+		</div>
+	</div>
+{/block}

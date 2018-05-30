@@ -1,0 +1,176 @@
+{extend name="public:base" /}
+
+{block name="head-js"}
+
+<script type="text/javascript" src="/public/static/editor/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" src="/public/static/editor/ueditor/ueditor.all.min.js"></script>
+
+<script type="text/javascript">
+
+$(function(){
+    var ue = UE.getEditor('inputContent',{
+        serverUrl :"{:url('Public/editorMethod')}"
+    });
+	   
+})
+</script>
+
+<script type="text/javascript" src="/public/static/js/js/calendar.config.js"></script>
+<script type="text/javascript" src="/public/static/js/js/XYHUploader/XYHUploader.js"></script>
+
+
+<script type="text/javascript">
+$(function () {
+	//缩略图上传
+	$('#litpic').XYHUploader({
+		sfile:"img1", 
+		furl:"{:url('upnode/upload',array('img_flag' => 1))}", 
+		burl:"{:url('upnode/browseFile', array('stype' => 'picture'))}",
+		thide: false,
+		thumflag: true
+	});
+	
+});
+</script>
+{/block}
+
+{block name="content"}
+	<div class="row">
+		<div class="col-lg-12">
+			<h3 class="page-header"><em class="glyphicon glyphicon-cloud-upload"></em> 
+			{$title}
+		    </h3>
+		</div>
+		
+	</div>
+
+
+	<div class="row">
+		<div class="col-lg-12">
+
+				<form method='post' class="form-horizontal" id="form_do" name="form_do" action="{:url('addSave')}">											
+
+					<div class="form-group">
+						<label for="inputTtitle" class="col-sm-2 control-label">姓名</label>
+						<div class="col-sm-2">
+							<input type="text" name="name" id="inputTtitle" class="form-control" placeholder="姓名" required="required" />									
+						</div>
+					</div>					
+					
+					<div class="form-group">
+						<label for="inputName" class="col-sm-2 control-label">年级</label>
+						<div class="col-sm-2">
+							<select name="type" class="form-control">
+								<optgroup label="小学"></optgroup>
+								<option value="1">一年级</option>
+								<option value="2">二年级</option>
+								<option value="3">三年级</option>
+								<option value="4">四年级</option>
+								<option value="5">五年级</option>
+								<option value="6">六年级</option>
+								<optgroup label="中学"></optgroup>
+								<option value="7">初一</option>
+								<option value="8">初二</option>
+								<option value="9">初三</option>
+							</select>			
+						</div>					
+					</div>					
+					
+					<div class="form-group">
+						<label for="inputProName" class="col-sm-2 control-label">班级</label>
+						<div class="col-sm-3">
+							<select name="class_id" class="form-control">
+								{volist name="list" id="v"}
+								<option value="{$v.id}" >{$v.name}</option>
+								{/volist}
+							</select>									
+						</div>
+					</div>
+
+					<!-- <div class="form-group">
+						<label for="litpic" class="col-sm-2 control-label">头像</label>
+						<div class="col-sm-5">
+							    <input type="text" class="form-control" name="pic" id="litpic"  value="" placeholder="缩略图地址" />	
+						</div>
+					</div> -->
+					
+					<div class="form-group">
+						<label for="ageTime" class="col-sm-2 control-label">出生日期</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control" name="age" id="ageTime" value="{:date('Y-m-d',time())}">
+			                <script type="text/javascript">
+			                    Calendar.setup({
+			                        weekNumbers: true,
+			                        inputField : "ageTime",
+			                        trigger    : "ageTime",
+			                        dateFormat: "%Y-%m-%d ",
+			                        showTime: true,
+			                        minuteStep: 1,
+			                        onSelect   : function() {this.hide();}
+			                    });
+			                </script>						
+						</div>
+						<label for="inputAuthor" class="col-sm-1 control-label">性别</label>
+						<div class="col-sm-1">							
+							<select name="sex" id="" class="form-control" >								
+								<option value="1">男</option>
+								<option value="0">女</option>								
+							</select>							
+						</div>
+					</div>
+					
+					
+					<div class="form-group">
+						<label for="inputPublishtime" class="col-sm-2 control-label">入学时间</label>
+						<div class="col-sm-3">
+							<input type="text" class="form-control" name="create_time" id="inputPublishtime" value="{:date('Y-m-d',time())}">
+			                <script type="text/javascript">
+			                    Calendar.setup({
+			                        weekNumbers: true,
+			                        inputField : "inputPublishtime",
+			                        trigger    : "inputPublishtime",
+			                        dateFormat: "%Y-%m-%d",
+			                        showTime: true,
+			                        minuteStep: 1,
+			                        onSelect   : function() {this.hide();}
+			                    });
+			                </script>						
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label for="inputShorttitle" class="col-sm-2 control-label">监护人</label>
+						<div class="col-sm-2">
+							<input type="text" name="guardian" id="inputPoint"  class="form-control" placeholder="监护人" />	
+						</div>	
+						<label for="inputShorttitle" class="col-sm-2 control-label">监护人电话</label>	
+						<div class="col-sm-2">
+							<input type="text" name="number"   class="form-control" placeholder="电话" />	
+						</div>		
+					</div>
+
+					<div class="form-group">
+						<label for="inputCopyfrom" class="col-sm-2 control-label">住址</label>
+						<div class="col-sm-5">
+							<input type="text" name="add" id="inputCopyfrom" class="form-control" value="" placeholder="来源" />							
+						</div>
+					</div>
+					
+					<div class="row margin-botton-large">
+						<div class="col-sm-offset-2 col-sm-9">
+							<input type="hidden" name="status" value="1" />
+							<div class="btn-group">
+								<button type="submit" class="btn btn-primary"> <i class="glyphicon glyphicon-saved"></i>
+									保存
+								</button>
+								<button type="button" onclick="goUrl('{:url('index')}')" class="btn btn-default"> <i class="glyphicon glyphicon-chevron-left"></i>
+									返回
+								</button>
+							</div>
+						</div>
+					</div>
+				</form>
+	
+		</div>
+	</div>
+{/block}

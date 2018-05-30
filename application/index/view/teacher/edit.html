@@ -1,0 +1,137 @@
+{extend name="public:base" /}
+{block name="head-js"}
+<script type="text/javascript" src="/public/static/editor/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" src="/public/static/editor/ueditor/ueditor.all.min.js"></script>
+<script type="text/javascript">
+$(function(){
+    var ue = UE.getEditor('inputContent',{
+        serverUrl :"{:url('Uponde/editorMethod')}"
+    });
+})
+</script>
+
+<script type="text/javascript" src="/public/static/js/js/calendar.config.js"></script>
+<script type="text/javascript" src="/public/static/js/js//XYHUploader/XYHUploader.js"></script>
+
+<script type="text/javascript">
+$(function () {
+	//缩略图上传
+	$('#litpic').XYHUploader({
+		sfile:"img1", 
+		furl:"{:url('Uponde/upload',array('img_flag' => 1))}", 
+		burl:"{:url('Uponde/browseFile', array('stype' => 'picture'))}",
+		thide: false,
+		thumflag: true
+	});
+
+	
+});
+
+</script>
+	
+{/block}
+
+{block name="content"}
+	<div class="row">
+		<div class="col-lg-12">
+			<h3 class="page-header"><em class="glyphicon glyphicon-cloud-upload"></em> 
+			{$title} 
+		    </h3>
+		</div>		
+	</div>
+
+
+	<div class="row">
+		<div class="col-lg-12">
+
+				<form method='post' class="form-horizontal" id="form_do" name="form_do" action="{:url('edit')}">											
+
+					<div class="form-group">
+						<label for="inputTtitle" class="col-sm-2 control-label">姓名</label>
+						<div class="col-sm-2">
+							<input type="text" value="{$teacher.name}" name="name" id="inputTtitle" class="form-control" placeholder="姓名" required="required" />									
+						</div>
+					</div>	
+					<label for="ageTime" class="col-sm-2 control-label">出生日期:</label>
+						<div class="col-sm-2">
+							<input type="text" class="form-control" name="age" id="ageTime" value="{$teacher['age']}">
+			                <script type="text/javascript">
+			                    Calendar.setup({
+			                        weekNumbers: true,
+			                        inputField : "ageTime",
+			                        trigger    : "ageTime",
+			                        dateFormat: "%Y-%m-%d",
+			                        showTime: true,
+			                        minuteStep: 1,
+			                        onSelect   : function() {this.hide();}
+			                    });
+			                </script>						
+						</div>					
+					<div class="form-group" >
+							<label for="inputSex" class="col-sm-1 control-label" >性别</label>
+							<div class="col-sm-1 control-label" >
+								<select name="sex" id="inputSex" class="form-control" >
+									<option value="1" {if condition="$teacher['sex'] eq 1"}selected="selected" {/if} >男</option>
+									<option value="0" {if condition="$teacher['sex'] eq 0"}selected="selected" {/if} >女</option>
+								</select>														
+							</div> 															
+					</div>					
+					<div class="form-group" >
+						<label for="inputSpecialtr" class="col-sm-2 control-label" >专业</label>
+							<div class="col-sm-2 control-label" >
+								<input type="text" value="{$teacher.specialty}" name="specialty" id="inputSpecialtr" class="form-control" placeholder="专业" />
+							</div>						
+					</div>					
+					<div class="form-group" >
+						<label for="inputNumber" class="col-sm-2 control-label" >电话</label>
+							<div class="col-sm-2 control-label" >
+								<input type="text" value="{$teacher.number}" name="number" id="inputNumber" class="form-control" placeholder="电话" />
+							</div>						
+					</div>
+				    <div class="form-group">
+						<label for="litpic" class="col-sm-2 control-label">头像</label>
+						<div class="col-sm-5">
+							    <input type="text" class="form-control" name="pic" id="litpic" {if condition="!empty($teacher['pic'])" } value="{$teacher.pic}" {/if} placeholder="缩略图地址" />	
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="inputPublishtime" class="col-sm-2 control-label">入学时间</label>
+						<div class="col-sm-3">
+							<input type="text" class="form-control" name="create_time" id="inputPublishtime" value="{:date('Y-m-d H:i:s',$teacher['create_time'])}">
+			                <script type="text/javascript">
+			                    Calendar.setup({
+			                        weekNumbers: true,
+			                        inputField : "inputPublishtime",
+			                        trigger    : "inputPublishtime",
+			                        dateFormat: "%Y-%m-%d %H:%M:%S",
+			                        showTime: true,
+			                        minuteStep: 1,
+			                        onSelect   : function() {this.hide();}
+			                    });
+			                </script>						
+						</div>
+					</div>					
+					
+
+					<div class="row margin-botton-large">
+						<div class="col-sm-offset-2 col-sm-9">
+							<input type="hidden" name="id" value="{$teacher.id}" />
+							<div class="btn-group">
+								<button type="submit" class="btn btn-primary"> <i class="glyphicon glyphicon-saved"></i>
+									保存
+								</button>
+								<button type="button" onclick="goUrl('{:url('index')}')" class="btn btn-default"> <i class="glyphicon glyphicon-chevron-left"></i>
+									返回
+								</button>
+							</div>
+						</div>
+					</div>
+				</form>
+	
+		</div>
+	</div>
+
+		
+
+
+{/block}
