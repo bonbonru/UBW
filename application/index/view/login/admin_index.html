@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -6,37 +6,22 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1" />
   <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
 <title>后台管理</title>
-<link rel="stylesheet" href="/public/static/bootstrap/3.3.5/css/bootstrap.min.css" />
 <script type="text/javascript" src="/public/static/js/jquery-1.11.3.min.js"></script>
-<script src="/public/static/js/frame.js?v20180501" language="javascript" type="text/javascript"></script>
-<script type="text/javascript" src="/public/static/jq_plugins/layer/layer.js"></script>
-<link href="/public/static/css/frame.css" rel="stylesheet" type="text/css" />
-
-<style>
-	.list-group>a{
-		margin: 1px 0;
-	}
-</style>
-
-<script>
-	$(function(){
-		$('.list-group>a').click(function(){
-			$(this).addClass('active').siblings().removeClass('active');
-		})
-	})
-</script>
+<script src="/public/staticjs/frame.js?v20180501" language="javascript" type="text/javascript"></script>
+<script type="text/javascript" src="__DATA__/public/staticjs/jq_plugins/layer/layer.js"></script>
+<link href="/public/staticjs/css/frame.css" rel="stylesheet" type="text/css" />
 
 </head>
 <body class="showmenu" data-get-url="{:url('Public/checkState')}">
 <div class="pagemask"></div>
 <iframe class="iframemask"></iframe>
 <div class="head">
-<div class="top_logo"> <img src="/public/static/images/main/logo.png"/> </div>
-     <div class="nav" id="nav">   
+<div class="top_logo"> <img src="/public/staticjs/images/main/logo.png" /> </div>
+     <div class="nav" id="nav">
       <ul>
-      	{foreach name='menu' key='k' item='v'}
-		  <li id="menu_{$k}"><a {empty name='k'}class='thisclass'{/empty} href="#" _for="left_menu_{$k}"><b>{$v.name}</b></a></li>
-		{/foreach}
+      	<foreach name='menu' key='k' item='v'>
+		  <li id="menu_{$k}"><a <empty name='k'>class="thisclass"</empty> href="#" _for="left_menu_{$k}"><b>{$v.name}</b></a></li>
+		</foreach>
       </ul>
     </div>
 	 <div class="top_link">
@@ -51,23 +36,46 @@
 </div>
 <!-- header end -->
 
-<div class="left">	  
-	<div class="list-group text-center ">	    
-		<a href="{:url('student/index')}" target="main" class="list-group-item list-group-item-primary active "> 学生 </a>
-	  	<a href="{:url('teacher/index')}" target="main" class="list-group-item list-group-item-primary "> 教师	</a>
-	  	<a href="{:url('grade/index')}" target="main" class="list-group-item list-group-item-primary "> 班级	</a>
-	  	<a href="{:url('score/index')}" target="main" class="list-group-item list-group-item-primary "> 成绩	</a>
-	</div>
-</div>
+<div class="left">
+<div class="span"></div>
+<div class="menu" id="menu" data-url="{:url('Index/getParentCate')}">
+<foreach name='menu' key='k' item='v'>
+<div id="items_left_menu_{$k}">
+	<volist name='v["child"]' key='k2' id='v2'>
+	<dl id="dl_items_{$k2}_{$k}" data-cid="{$v2['id']}">
+		<dt>{$v2.name}</dt>
+		<dd>
+		<ul>
 
+      <if condition="$v2['id'] eq 7">
+      <volist name='qmenu' key='k3' id='v3'>
+      <li><a href="{:url($v3['url'])}" target="main">{$v3.name}</a></li>
+      </volist>  
+      <else/>
+      <volist name='v2["child"]' key='k3' id='v3'>
+      <li><a href="{:url($v3['url'])}" target="main">{$v3.name}</a></li>
+      </volist>
+
+      </if>
+		</ul>
+		</dd>
+	</dl>
+	</volist>	
+	
+</div>
+</foreach>
+<!-- Item End -->
+
+
+</div>
+</div>
 <!-- left end -->
 
 <div class="right">
 	<div class="rightContent">
-	<iframe id="main" name="main" frameborder="0" scrolling="yes" src="{:url('student/index')}" ></iframe>
+	<iframe id="main" name="main" frameborder="0" scrolling="yes" src="{:url('Public/main')}" ></iframe>
 	</div>    
 </div>
-
 <!-- right end -->
 
 <div class="qucikmenu" id="qucikmenu">

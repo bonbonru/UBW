@@ -23,11 +23,9 @@ class Login extends Controller{
         $re = $this->validate($verify,[
             'captcha|验证码'=>'require|captcha'
         ]);
-        dump($re); exit;
         if($re !== true) {
             $this->error($re);
         }
-        
         if(empty($name)){
             $this->error('用户名不能为空');
         } 
@@ -43,14 +41,12 @@ class Login extends Controller{
             $this->error('用户被锁定！');
         }
         
-        
-        
         //更新数据库的参数
-        $data = array('id' => $user['id'], //保存时会自动为此ID的更新
+        $data = array('id' => $user['id'], 
             'login_time'       => date('Y-m-d H:i:s'),
-            //'login_ip'         => get_client_ip(),
             'login_num'        => $user['login_num'] + 1,
         );
+        
         //更新数据库
         Db::name('admin')->update($data);
         $group_id = Db::name('AuthGroupAccess')->where('uid = '.$user['id'])->column('group_id');

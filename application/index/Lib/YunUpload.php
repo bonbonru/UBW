@@ -23,7 +23,7 @@
  * @Last Modified by:   gosea
  * @Last Modified time: 2017-11-02 17:05:36
  */
-namespace Common\Lib;
+namespace app\index\Lib;
 
 class YunUpload {
 	private $thumFlag = 0; //是否是图片(带缩略图)，默认是作为文件处理（不管是否是图片）
@@ -39,7 +39,7 @@ class YunUpload {
 		$this->thumFlag = intval($thum_flag);
 
 		//上传根目录
-		$this->rootPath = C('CFG_UPLOAD_ROOTPATH');
+		$this->rootPath = config('CFG_UPLOAD_ROOTPATH');
 		//带缩图的图片，生成为固定位置
 		if ($this->thumFlag) {
 			$this->subDirectory = 'img1/';
@@ -50,7 +50,7 @@ class YunUpload {
 		}
 
 		//允许类型
-		$this->allowType = $this->thumFlag ? explode(',', C('CFG_UPLOAD_IMG_EXT')) : explode(',', C('CFG_UPLOAD_FILE_EXT'));
+		$this->allowType = $this->thumFlag ? explode(',', config('CFG_UPLOAD_IMG_EXT')) : explode(',', config('CFG_UPLOAD_FILE_EXT'));
 		$this->fileField = $file_field; //base64/remote
 
 	}
@@ -62,7 +62,7 @@ class YunUpload {
 	public function upload() {
 		$result = array('status' => 0, 'info' => '', 'data' => array());
 		//文件上传地址提交给他，并且上传完成之后返回一个信息，让其写入数据库
-		if (empty($_FILES)) {
+		if (empty(request()->file())) {
 			$result['info'] = '必须选择上传文件';
 			return $result;
 		} else {
@@ -136,11 +136,11 @@ class YunUpload {
 				$new_info = array();
 				foreach ($info as $k => $v) {
 
-					$v['url'] = get_url_path(C('CFG_UPLOAD_ROOTPATH')) . $v['savepath'] . $v['savename'];
+					$v['url'] = get_url_path(config('CFG_UPLOAD_ROOTPATH')) . $v['savepath'] . $v['savename'];
 					//是否有缩略图
 					if ($this->thumFlag) {
 						//读取缩略图配置信息
-						$imgtbSize = C('CFG_IMGTHUMB_SIZE'); //配置缩略图第一个参数
+						$imgtbSize = config('CFG_IMGTHUMB_SIZE'); //配置缩略图第一个参数
 						$imgTSize  = explode('X', $imgtbSize[0]);
 						if (!empty($imgTSize)) {
 							$v['turl'] = get_picture($v['url'], $imgTSize[0], $imgTSize[1]);
@@ -200,11 +200,11 @@ class YunUpload {
 						break; //失败跳过
 					}
 
-					$v['url'] = get_url_path(C('CFG_UPLOAD_ROOTPATH')) . $v['savepath'] . $v['savename'];
+					$v['url'] = get_url_path(config('CFG_UPLOAD_ROOTPATH')) . $v['savepath'] . $v['savename'];
 					//是否有缩略图
 					if ($this->thumFlag) {
 						//读取缩略图配置信息
-						$imgtbSize = C('CFG_IMGTHUMB_SIZE'); //配置缩略图第一个参数
+						$imgtbSize = config('CFG_IMGTHUMB_SIZE'); //配置缩略图第一个参数
 						$imgTSize  = explode('X', $imgtbSize[0]);
 						if (!empty($imgTSize)) {
 							$v['turl'] = get_picture($v['url'], $imgTSize[0], $imgTSize[1]);
@@ -230,7 +230,7 @@ class YunUpload {
 	//上传图片
 	public function _upload() {
 		$ext = ''; //原文件后缀
-		foreach ($_FILES as $key => $v) {
+		foreach (request()->file() as $key => $v) {
 			$strtemp = explode('.', $v['name']);
 			$ext     = end($strtemp); //获取文件后缀，或$ext = end(explode('.', $_FILES['fileupload']['name']));
 			break;
@@ -469,7 +469,7 @@ class YunUpload {
 		/*缩略图设置*/
 		//设置需要生成缩略图,仅对图像文件有效
 		//读取配置文件中的设置
-		$imgtbSize     = C('CFG_IMGTHUMB_SIZE');
+		$imgtbSize     = config('CFG_IMGTHUMB_SIZE');
 		$imgtbArray    = array();
 		$imgtbFixArray = array();
 		foreach ($imgtbSize as $v) {
@@ -491,7 +491,7 @@ class YunUpload {
 		if (!empty($imgtbFixArray) || !empty($imgtbArray)) {
 			//默认使用GD
 			$think_img = new \Think\Image();
-			$thumbType = C('CFG_IMGTHUMB_TYPE') ? 3 : 1; //配置大小
+			$thumbType = config('CFG_IMGTHUMB_TYPE') ? 3 : 1; //配置大小
 
 			foreach ($info as $k => $file) {
 				if (empty($file['savename'])) {
@@ -524,11 +524,11 @@ class YunUpload {
 		if (empty($info)) {
 			return;
 		}
-		$imgWaterOn          = C('CFG_IMAGE_WATER_ON'); //水印是否开启
-		$imgWaterFile        = C('CFG_IMAGE_WATER_FILE'); //水印文件
-		$imgWaterPos         = C('CFG_IMAGE_WATER_POSITION'); //水印位置 1~9
-		$imgWaterDiap        = C('CFG_IMAGE_WATER_DIAPHANEITY'); //透明度 0~100（%）
-		$imgWaterIgnoreWidth = C('CFG_IMAGE_WATER_IGNORE_WIDTH'); //最小添加水印的宽度
+		$imgWaterOn          = config('CFG_IMAGE_WATER_ON'); //水印是否开启
+		$imgWaterFile        = config('CFG_IMAGE_WATER_FILE'); //水印文件
+		$imgWaterPos         = config('CFG_IMAGE_WATER_POSITION'); //水印位置 1~9
+		$imgWaterDiap        = config('CFG_IMAGE_WATER_DIAPHANEITY'); //透明度 0~100（%）
+		$imgWaterIgnoreWidth = config('CFG_IMAGE_WATER_IGNORE_WIDTH'); //最小添加水印的宽度
 		if (!$imgWaterOn || empty($imgWaterFile)) {
 			return;
 		}
@@ -570,7 +570,7 @@ class YunUpload {
 
 		//默认使用GD
 		$think_img = new \Think\Image();
-		$thumbType = C('CFG_IMGTHUMB_TYPE') ? 3 : 1; //配置大小
+		$thumbType = config('CFG_IMGTHUMB_TYPE') ? 3 : 1; //配置大小
 
 		foreach ($info as $k => $file) {
 			if (empty($file['savename'])) {
@@ -648,7 +648,7 @@ class YunUpload {
 			$data['file_type']   = $file_type;
 			$data['file_size']   = $file['size'];
 			$data['upload_time'] = date('Y-m-d H:i:s');
-			$data['aid']         = session(C('USER_AUTH_KEY')); //管理员ID
+			$data['aid']         = session(config('USER_AUTH_KEY')); //管理员ID
 			if ($db->add($data)) {
 				++$num;
 			}

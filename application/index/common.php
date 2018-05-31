@@ -208,7 +208,7 @@ function get_url($cate, $id = 0, $jumpflag = false, $jumpurl = '') {
 			//不存在文档id,也无路由情况
 			$ename     = ucfirst(substr($ename, 1)); //
 			$firstChar = substr($ename, 0, 1);
-			$url       = ($firstChar != '/') ? U($module . $ename, '') : U('' . $ename, '');
+			$url       = ($firstChar != '/') ? url($module . $ename, '') : url('' . $ename, '');
 
 		} else {
 			$url = $ename; //http://
@@ -216,13 +216,13 @@ function get_url($cate, $id = 0, $jumpflag = false, $jumpurl = '') {
 
 	} else {
 		//开启路由
-		if (C('URL_ROUTER_ON') == true) {
-			$url = $id > 0 ? U($module . '' . $ename . '/' . $id, '') : U('/' . $ename, '', '');
+		if (config('URL_ROUTER_ON') == true) {
+			$url = $id > 0 ? url($module . '' . $ename . '/' . $id, '') : url('/' . $ename, '', '');
 		} else {
 
-			$url = U($module . 'List/index', array('cid' => $cate['id']));
+			$url = url($module . 'List/index', array('cid' => $cate['id']));
 			if ($id > 0) {
-				$url = U($module . 'Show/index', array('cid' => $cate['cid'], 'id' => $cate['id']));
+				$url = url($module . 'Show/index', array('cid' => $cate['cid'], 'id' => $cate['id']));
 			}
 
 		}
@@ -260,10 +260,10 @@ function get_content_url($id, $cid, $ename, $jumpflag = false, $jumpurl = '') {
 	}
 
 	//开启路由
-	if (C('URL_ROUTER_ON') == true) {
-		$url = $id > 0 ? U($module . '' . $ename . '/' . $id, '') : U('/' . $ename, '', '');
+	if (config('URL_ROUTER_ON') == true) {
+		$url = $id > 0 ? url($module . '' . $ename . '/' . $id, '') : url('/' . $ename, '', '');
 	} else {
-		$url = U($module . 'Show/index', array('cid' => $cid, 'id' => $id));
+		$url = url($module . 'Show/index', array('cid' => $cid, 'id' => $id));
 	}
 
 	return $url;
@@ -285,7 +285,7 @@ function get_position($typeid = 0, $sname = '', $surl = '', $is_mobile = false, 
 	if (empty($home_name)) {
 		$home_name = '首页';
 	}
-	$url      = $is_mobile ? U(MODULE_NAME . '/Index/index/') : C('CFG_WEBURL');
+	$url      = $is_mobile ? url(MODULE_NAME . '/Index/index/') : config('CFG_WEBURL');
 	$position = '<a href="' . $url . '">' . $home_name . '</a>';
 
 	//Parents of Category
@@ -832,7 +832,7 @@ function tag_param_var($str) {
 
 function check_badword($content) {
 	//定义处理违法关键字的方法
-	$badword = C('CFG_BADWORD'); //定义敏感词
+	$badword = config('CFG_BADWORD'); //定义敏感词
 
 	if (empty($badword)) {
 		return false;
@@ -913,7 +913,7 @@ function get_cookie($name, $key = '') {
 	if (!isset($_COOKIE[$name])) {
 		return null;
 	}
-	$key = empty($key) ? C('CFG_COOKIE_ENCODE') : $key;
+	$key = empty($key) ? config('CFG_COOKIE_ENCODE') : $key;
 
 	$value = $_COOKIE[$name];
 	$key   = md5($key);
@@ -931,7 +931,7 @@ function get_cookie($name, $key = '') {
 //使用时修改密钥$key 涉及金额结算请重新设计cookie存储格式
 //function set_cookie($args , $key = '@^%$y5fbl') {
 function set_cookie($args, $key = '') {
-	$key = empty($key) ? C('CFG_COOKIE_ENCODE') : $key;
+	$key = empty($key) ? config('CFG_COOKIE_ENCODE') : $key;
 
 	$name   = $args['name'];
 	$expire = isset($args['expire']) ? $args['expire'] : null;
@@ -1015,7 +1015,7 @@ function get_picture($str, $width = 0, $height = 0, $rnd = false) {
 		$str = '';
 	}
 	if (empty($str)) {
-		$str      = $this->request->root() . '/uploads/system/nopic.png';
+		$str      = request()->root() . '/uploads/system/nopic.png';
 		$ext      = 'png';
 		$ext_dest = 'png';
 		$width    = 0;
@@ -1126,13 +1126,13 @@ function get_pinyin($str, $ishead = 0, $isclose = 1, $lang = 'zh-cn') {
  */
 function get_tpl($tpl = '', $style = '') {
 	$tplPath = './Public/' . MODULE_NAME . '/';
-	$tplPath .= empty($style) ? C('CFG_THEMESTYLE') . '/' : $style . '/';
+	$tplPath .= empty($style) ? config('CFG_THEMESTYLE') . '/' : $style . '/';
 	if (trim($tpl) == '') {
-		$tplPath .= CONTROLLER_NAME . C('TMPL_FILE_DEPR') . ACTION_NAME . C('TMPL_TEMPLATE_SUFFIX');
+		$tplPath .= CONTROLLER_NAME . config('TMPL_FILE_DEPR') . ACTION_NAME . config('TMPL_TEMPLATE_SUFFIX');
 	} elseif (strpos($tpl, '.') > 0) {
 		$tplPath .= $tpl;
 	} else {
-		$tplPath .= $tpl . C('TMPL_TEMPLATE_SUFFIX');
+		$tplPath .= $tpl . config('TMPL_TEMPLATE_SUFFIX');
 	}
 	return $tplPath;
 }
@@ -1259,9 +1259,9 @@ function get_url_path($path, $domain = false, $path_root = __ROOT__) {
 	$baseurl = ''; //域名地址
 	if ($domain) {
 		if (!empty($_SERVER['HTTP_HOST'])) {
-			$baseurl = 'http://' . $this->request->server('HTTP_HOST');
+			$baseurl = 'http://' . request()->server('HTTP_HOST');
 		} else {
-			$baseurl = rtrim("http://" . $this->request->server('SERVER_NAME'), '/');
+			$baseurl = rtrim("http://" . request()->server('SERVER_NAME'), '/');
 		}
 
 	}
@@ -1344,13 +1344,13 @@ function check_verify($code, $id = 1) {
 
 /**goto mobile*/
 function go_mobile() {
-	$mobileAuto = C('CFG_MOBILE_AUTO');
+	$mobileAuto = config('CFG_MOBILE_AUTO');
 	if ($mobileAuto == 1) {
 		$wap2web = I('wap2web', 0, 'intval'); //手机访问电脑版
 		$agent   = $_SERVER['HTTP_USER_AGENT'];
 		if ($wap2web != 1) {
 			if (strpos($agent, "comFront") || strpos($agent, "iPhone") || strpos($agent, "MIDP-2.0") || strpos($agent, "Opera Mini") || strpos($agent, "UCWEB") || strpos($agent, "Android") || strpos($agent, "Windows Phone") || strpos($agent, "Windows CE") || strpos($agent, "SymbianOS")) {
-				header('Location:' . U('Mobile/Index/index') . '');
+				header('Location:' . url('Mobile/Index/index') . '');
 			}
 		}
 	}
@@ -1366,9 +1366,9 @@ function go_mobile() {
  */
 function go_link($weburl = 'http://www.xyhcms.com/', $rnd = 0, $flag = 1) {
 	if (strpos($weburl, 'http://') === 0 || strpos($weburl, 'https://') === 0 || strpos($weburl, 'ftp://') === 0) {
-		$weburl = U(C('DEFAULT_MODULE') . '/Go/link', array('url' => base64_encode($weburl)));
+		$weburl = url(config('DEFAULT_MODULE') . '/Go/link', array('url' => base64_encode($weburl)));
 	} else {
-		$weburl = U($weburl);
+		$weburl = url($weburl);
 	}
 	if ($flag) {
 		$search  = $_SERVER['SCRIPT_NAME']; //$_SERVER['PHP_SELF'];
@@ -1397,7 +1397,7 @@ function D2($name = '', $tableName = '', $layer = '') {
 	}
 
 	static $_model = array();
-	$layer         = $layer ?: C('DEFAULT_M_LAYER');
+	$layer         = $layer ?: config('DEFAULT_M_LAYER');
 	if (isset($_model[$name . $layer . '\\' . $tableName])) {
 		return $_model[$name . $layer . '\\' . $tableName];
 	}
@@ -1408,7 +1408,7 @@ function D2($name = '', $tableName = '', $layer = '') {
 		$model = empty($tableName) ? new $class(basename($name)) : new $class(basename($tableName), $tableName);
 	} elseif (false === strpos($name, '/')) {
 		// 自动加载公共模块下面的模型
-		if (!C('APP_USE_NAMESPACE')) {
+		if (!config('APP_USE_NAMESPACE')) {
 			import('Common/' . $layer . '/' . $class);
 		} else {
 			$class = '\\Common\\' . $layer . '\\' . $name . $layer;
@@ -1477,17 +1477,17 @@ function send_mail($address, $title, $message, $attachment = null) {
 	$mail->IsHTML(true); //body is html
 
 	// 设置SMTP服务器。
-	$mail->Host = C('CFG_EMAIL_HOST');
-	$mail->Port = C('CFG_EMAIL_PORT') ? C('CFG_EMAIL_PORT') : 25; // SMTP服务器的端口号
+	$mail->Host = config('CFG_EMAIL_HOST');
+	$mail->Port = config('CFG_EMAIL_PORT') ? config('CFG_EMAIL_PORT') : 25; // SMTP服务器的端口号
 
 	// 设置用户名和密码。
-	$mail->Username = C('CFG_EMAIL_LOGINNAME');
-	$mail->Password = C('CFG_EMAIL_PASSWORD');
+	$mail->Username = config('CFG_EMAIL_LOGINNAME');
+	$mail->Password = config('CFG_EMAIL_PASSWORD');
 
 	// 设置邮件头的From字段
-	$mail->From = C('CFG_EMAIL_FROM');
+	$mail->From = config('CFG_EMAIL_FROM');
 	// 设置发件人名字
-	$mail->FromName = C('CFG_EMAIL_FROM_NAME');
+	$mail->FromName = config('CFG_EMAIL_FROM_NAME');
 
 	// 设置邮件标题
 	$mail->Subject = $title;
@@ -1581,3 +1581,47 @@ function json_encode_ex($array, $json_option = 0) {
 		return json_encode($array, $json_option == 0 ? JSON_UNESCAPED_UNICODE : $json_option);
 	}
 }
+
+/**
+ * 获取客户端IP地址
+ * @param integer $type 返回类型 0 返回IP地址 1 返回IPV4地址数字
+ * @return mixed
+ */
+function get_client_ip($type = 0) {
+    $type       =  $type ? 1 : 0;
+    static $ip  =   NULL;
+    if ($ip !== NULL) return $ip[$type];
+    $for = request()->server('HTTP_X_FORWARDED_FOR');
+    $_ip = request()->server('HTTP_CLIENT_IP');
+    $addr = request()->server('REMOTE_ADDR');
+    //echo $for . $_ip . $addr ; 
+    if (isset($for)) {
+        $arr    =   explode(',', $for);
+        $pos    =   array_search('unknown',$arr);
+        if(false !== $pos) unset($arr[$pos]);
+        $ip     =   trim($arr[0]);
+    }elseif (isset($_ip)) {
+        $ip     =   $_ip;
+    }elseif (isset($addr)) {
+        $ip     =   $addr;
+    }
+    // IP地址合法验证
+    $long = sprintf("%u",ip2long($ip));
+    $ip   = $long ? array($ip, $long) : array('0.0.0.0', 0);
+    return $ip[$type];
+}
+
+//组成多维数组
+function toLayer($cate, $name = 'child', $pid = 0) {
+
+    $arr = array();
+    foreach ($cate as $v) {
+        if ($v['pid'] == $pid) {
+            $v[$name] = toLayer($cate, $name, $v['id']);
+            $arr[]    = $v;
+        }
+    }
+
+    return $arr;
+}
+

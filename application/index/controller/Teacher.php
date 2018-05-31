@@ -82,7 +82,21 @@ class Teacher extends Base {
     
     // 添加处理
     public function addSave() {
-    
+        
+        $img = $this->request->file('pic');
+        $info = $img->move('./uplodes/');
+        
+        if($info){
+            echo $info->getExtension(); echo '<hr/>';
+            // 输出 20160820/42a79759f284b767dfcb2a0197904287.jpg
+            echo $info->getSaveName();  echo '<hr/>';
+            // 输出 42a79759f284b767dfcb2a0197904287.jpg
+            echo $info->getFilename();  echo '<hr/>';
+        }else{
+            // 上传失败获取错误信息
+            echo $img->getError();
+        }
+        exit;
         $data = $this->request->post();
         $data['id'] = $this->request->post('id',0,'intval');
         $data['create_time'] = strtotime($data['create_time']);

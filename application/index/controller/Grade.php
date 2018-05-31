@@ -71,7 +71,7 @@ class Grade extends Base{
         
         $list = Db::name('teacher')->select();
         $this->assign('list',$list);
-        $this->assign('title','添加学生');
+        $this->assign('title','添加班级');
         
         return $this->fetch();
     }

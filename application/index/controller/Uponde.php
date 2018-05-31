@@ -69,11 +69,11 @@ class Uponde extends Base {
 	public function upload($img_flag = 0) {
 		header("Content-Type:text/html; charset=utf-8"); //不然返回中文乱码
 		$result   = array('state' => '失败', 'url' => '', 'name' => '', 'original' => '');
-		$sub_path = $this->request('post.sfile', '', 'trim,htmlspecialchars'); //判断其他子目录
+		$sub_path = request('post.sfile', '', 'trim,htmlspecialchars'); //判断其他子目录
 
 		$img_flag = empty($img_flag) ? 0 : 1;
 
-		$yun_upload    = new \index\YunUpload($img_flag, $sub_path);
+		$yun_upload    = new \app\index\Lib\YunUpload($img_flag, $sub_path);
 		$upload_result = $yun_upload->upload();
 
 		if ($upload_result['status']) {
@@ -104,23 +104,15 @@ class Uponde extends Base {
 			break;
 		case 'ad':
 			$base_path = '/uploads/abc1';
-			$where     = array('file_path' => array('LIKE', 'abc1/%'));
+			$where     = array('file_path','LIKE', 'abc1/%');
 			break;
 		default:
 			exit('参数错误');
 			break;
 		}
-
-		$count = Db::name('attachment')->where($where)->order('upload_time DESC')->count();
-
-		$page           = new \Common\Lib\Page($count, 10);
-		$page->rollPage = 7;
-		$page->setConfig('theme', '%HEADER% %FIRST% %UP_PAGE% %LINK_PAGE% %DOWN_PAGE% %END%');
-		$limit = $page->firstRow . ',' . $page->listRows;
-
 		//显示有缩略图　文件
-		$list = Db::name('attachment')->where($where)->order('upload_time DESC')->limit($limit)->select();
-
+		$list = Db::name('attachment')->where($where)->order('upload_time DESC')->paginate(10);
+      
 		$imgtbSize = config('CFG_IMGTHUMB_SIZE'); //配置缩略图第一个参数
 		foreach ($imgtbSize as $key => $val) {
 			$imgtbSize[$key] = explode('X', $val);
@@ -138,9 +130,9 @@ class Uponde extends Base {
 
 		$this->assign('vlist', $list);
 		$this->assign('stype', $stype);
-		$this->assign('page', $page->show());
+		$this->assign('page', raw($list));
 		$this->assign('type', '浏览文件');
-		$this->display();
+		return $this->fetch();
 
 	}
 
