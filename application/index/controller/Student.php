@@ -54,7 +54,7 @@ class Student extends Base {
     public function addSave(){
         $data = $this->request->post();
         $data['status'] = 1;
-        $data['pic'] = 0;
+        $data['pic'] = $this->request->post('pic','');
         $data['guardian'] = $this->request->post('guardian', '', 'htmlspecialchars,rtrim');
         $data['name'] = $this->request->post('name', '', 'htmlspecialchars,rtrim');
         $data['add'] = $this->request->post('add', '', 'htmlspecialchars,rtrim');
@@ -202,9 +202,9 @@ class Student extends Base {
         $where['sc.type'] = 1;
         $info =    $s_db->alias('s')
                         ->field('s.id , s.name, s.guardian , s.sex , s.age , s.pic , s.add , s.number ,c.name as c_name , t.name as t_name,  s.create_time , s.guardian , sc.english , sc.language , sc.math')
-                        ->join('xyh_class c',' c.id = s.class_id')
-                        ->join('xyh_teacher t',' c.teacher_id = t.id')
-                        ->join('xyh_score sc',' s.id = sc.student_id')
+                        ->join('class c',' c.id = s.class_id')
+                        ->join('teacher t',' c.teacher_id = t.id')
+                        ->join('score sc',' s.id = sc.student_id')
                         ->where($where)
                         ->find();
         
@@ -277,5 +277,8 @@ class Student extends Base {
         echo $html;
         
     }
+    
+    
+    
     
 }

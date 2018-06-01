@@ -50,6 +50,7 @@ class Teacher extends Base {
         $data['create_time'] = strtotime($data['create_time']);
         $data['id'] = $this->request->post('id', 0, 'intval');
         $data['name'] = $this->request->post('name','','htmlspecialchars,rtrim');
+        $data['pic'] =  $this->request->post('pic','');
         if(empty($data['name'])){
             $this->error('教师名不能为空');
         }
@@ -83,24 +84,11 @@ class Teacher extends Base {
     // 添加处理
     public function addSave() {
         
-        $img = $this->request->file('pic');
-        $info = $img->move('./uplodes/');
-        
-        if($info){
-            echo $info->getExtension(); echo '<hr/>';
-            // 输出 20160820/42a79759f284b767dfcb2a0197904287.jpg
-            echo $info->getSaveName();  echo '<hr/>';
-            // 输出 42a79759f284b767dfcb2a0197904287.jpg
-            echo $info->getFilename();  echo '<hr/>';
-        }else{
-            // 上传失败获取错误信息
-            echo $img->getError();
-        }
-        exit;
         $data = $this->request->post();
         $data['id'] = $this->request->post('id',0,'intval');
         $data['create_time'] = strtotime($data['create_time']);
         $data['name'] = $this->request->post('name','','htmlspecialchars,rtrim');
+        $data['status'] = 1;
         if(empty($data['name'])){
             $this->error('教师名不能为空');
         }
@@ -112,6 +100,7 @@ class Teacher extends Base {
         if(empty($data['number'])){
             $this->error('电话不能为空');
         }
+        $data['pic'] = $this->request->post('pic','');
         
         if(Db::name('teacher')->insert($data)) {
             $this->success('已成功添加教师资料',url('index'));
@@ -269,8 +258,40 @@ class Teacher extends Base {
         
     }
     
+    // 图片上传
+    public function uplode() {
+        $file = $this->request->file('pic');
+        $result = ['code'=>0,'msg'=>'上传失败','data'=>[]];
+        if($file){
+            $info = $file->move('D:\wamp64\www\public\uplode');
+            $img['title'] = $info->getExtension();
+            $img['file_path'] = str_replace("\\","/",$info->getSaveName());
+            $img['title'] =  $info->getFilename();
+            $img['file_size'] = $info->getSize();
+            $img['file_type'] = 1 ;
+            $img['has_litpic'] = 1;
+            $img['upload_time'] = date('Y-m-d H:i:s',time());
+            $img['aid'] = 1;
+            $img['user_id'] = 0;
+            $id = Db::name('attachment')->insertGetId($img);
+            if($id){
+                $result['code'] = 1;
+                $result['msg'] = '已成功上传图片';
+                $result['data']['file_path'] = $img['file_path'];
+                $result['data']['id'] = $id;
+                return json($result);
+            } else {
+                $result['msg'] = '插入失败';
+                $result['data']['id'] = $id;
+                return json($result);
+            }
+        }else{
+            return json($result);
+        }
+    }
     
     
+   
     
     
     

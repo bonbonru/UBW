@@ -83,6 +83,7 @@ class Grade extends Base{
     
         $list = $db->where('status = 0')->order('id desc')->paginate(5);
         
+        $in = [];
         foreach($list as $k=>$v) {
             $in[] = $v['teacher_id'];
             $in[] = $v['math_id'];
@@ -91,6 +92,7 @@ class Grade extends Base{
         }
         $name = Db::name('teacher')->field('id,name')->where(['id'=>$in])->select();
         
+        $t_name = '';
         foreach ($name as $k=>$v){
             $t_name[$v['id']] = $v['name'];
         }
@@ -125,10 +127,12 @@ class Grade extends Base{
     public function addSave() {
         $data = $this->request->post();
         $data['name'] = $this->request->post('name', '', 'htmlspecialchars,rtrim');
+        $data['pic'] = $this->request->post('pic', '');
+        $data['status'] = 1;
         if(empty($data['name'])){
             $this->error('班级名不能为空');
         }
-        $data['create_time'] = strtotime($data['create_time']);        
+        $data['create_time'] = strtotime($data['create_time']);
         
         if(DB::name('class')->insert($data)) {
             $this->success('已成功添加班级',url('index'));
