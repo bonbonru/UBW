@@ -15,7 +15,7 @@ function uplode() {
 			console.log(re);
 			if(re.code = 1){
 				$('#form_do img').remove();
-				var html = "<img style='width:180px;' src='/public/uplode/"+re.data.file_path+"'/>";
+				var html = "<img style='width:180px;' src='{$Request.rootUrl}/uplode/"+re.data.file_path+"'/>";
 				$('#pic').after(html);
 				$('#pic').after("<input type='hidden' name='pic' value='"+re.data.file_path+"'>")
 				$('#uptutton').addClass('disabled');

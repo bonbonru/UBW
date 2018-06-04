@@ -9,10 +9,9 @@
 				data:'id='+id,
 				success:function(re) {
 					console.log(re);
-					if(re){
-						$('.modal-body').append(re);
-					} else {
-						alert('操作失败,请刷新重试');
+					if(re.status == 1){
+						var html = "<div class='container' style='width:100%;'><div class='row'><div class='col-md-2'><label>编号:"+re.data['id']+"</label></div><div class='col-md-3 '><label>班级名:"+re.data['name']+"</label></div><div class='col-md-3 '><label>学级:"+re.data['grade']+"</label></div><div class='col-md-4 '><label></label></div></div><div class='row'><div class='col-md-3 '><label>班主任:"+re.data['teacher']['name']+"</label></div><div class='col-md-4'><label>电话 :"+re.data['teacher']['number']+"</label></div></div><div class='row'><div class='col-md-4 '><label>入学日期 :"+re.data['create_time']+"</label></div></div><div class='row'><div class='col-md-4'><label>语文老师:"+re.data['language']['name']+"</label></div><div class='col-md-4'><label>语文平均成绩 :"+re.avg['language']+"</label></div></div><div class='row'><div class='col-md-4'><label>数学老师:"+re.data['math']['name']+"</label></div><div class='col-md-4'><label>数学平均成绩 :"+re.avg['math']+"</label></div></div><div class='row'><div class='col-md-4'><label>英语老师:"+re.data['english']['name']+"</label></div><div class='col-md-4'><label>英语平均成绩 :"+re.avg['english']+"</label></div></div>"
+						$('.modal-body').append(html);
 					}
 				}
 			})

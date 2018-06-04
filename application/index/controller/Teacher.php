@@ -58,7 +58,9 @@ class Teacher extends Base {
         if(empty($data['specialty'])){
             $this->error('专业不能为空');
         }
-        
+        if(empty($this->request->post('pic'))){
+            unset($data['pic']);
+        }
         $re = Db::name('teacher')->update($data);
         if(false !== $re) {
             $this->success('已操作成功',url('index'));
@@ -146,7 +148,7 @@ class Teacher extends Base {
     
     // 还原状态
     public function restore() {
-    
+        
         if($this->request->isPost()){
             $key = $this->request->post();
             $key = $key['key'];
@@ -165,6 +167,8 @@ class Teacher extends Base {
     
     // 获取详细信息
     public function getInfo() {
+        $re = ['status'=>1,'msg'=>'成功','data'=>[]];
+        
         $id = $this->request->param('id',0,'intval');
         $info = Db::name('teacher')->find($id);
         $c_db = Db::name('class');
@@ -182,61 +186,12 @@ class Teacher extends Base {
         if(($on[1]*100+$on[2])>($date[1]*100+$date[2])){
             $info['onAge']++;
         }
-    
-        $html = "<div class='container' style='width:100%;' >
-        <div class='row'>
-        <div class='col-md-3'>
-        <label>姓名: {$info['name']}</label>
-        </div>
-        <div class='col-md-2 '>
-        <label>工号: {$info['id']}</label>
-        </div>
-        <div class='col-md-5 '>
-        <label> </label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-2 '>
-        <label>年龄: {$info['onAge']}</label>
-        </div>
-        <div class='col-md-4'>
-        <label>出生日期: {$info['age']}</label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-2'>
-        <label>性别: {$info['sex']}</label>
-        </div>
-        <div class='col-md-3 '>
-        <label>专业: {$info['specialty']}</label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-5 '>
-        <label>电话: {$info['number']}</label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-6'>
-        <label>入职日期 :{$info['create_time']}</label>
-        </div>
-        </div>      ";
-    
-        $type = ['teacher'=>'班主任 :' , 'language'=>'语文 :','math'=>'数学 :','english'=>'英语 :'];
-        foreach($for as $k=>$val){
-            $html .= "<div class='row'>
-            <div class='col-md-2'>
-            <label>{$type[$k]}</label>
-            </div>";
-            foreach($val as $v) {
-                $html .= "<div class='col-md-3'> <label>{$v['name']}</label>  </div>";
-            }
-            $html .= "</div>";
-        }
-        $html .= "</div>";
-    
-        echo $html;  exit;
-    
+        
+        $re['data'] = $info;
+        $re['for'] = $for;
+        
+        return json($re);
+        
     }
     
     
@@ -263,7 +218,7 @@ class Teacher extends Base {
         $file = $this->request->file('pic');
         $result = ['code'=>0,'msg'=>'上传失败','data'=>[]];
         if($file){
-            $info = $file->move('D:\wamp64\www\public\uplode');
+            $info = $file->move(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'uplode'.DIRECTORY_SEPARATOR);
             $img['title'] = $info->getExtension();
             $img['file_path'] = str_replace("\\","/",$info->getSaveName());
             $img['title'] =  $info->getFilename();

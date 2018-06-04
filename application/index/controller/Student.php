@@ -10,7 +10,6 @@ class Student extends Base {
     protected  $type = [1=>'一年级',2=>'二年级',3=>'三年级',4=>'四年级',5=>'五年级',6=>'六年级',7=>'初一',8=>'初二',9=>'初三'];
     
     public function index() {
-        
         $keyword = $this->request->param('keyword','','htmlspecialchars,trim');
         $where = null;
         $s_db = Db::name('student');
@@ -20,7 +19,7 @@ class Student extends Base {
         }
         
         $list = $s_db->alias('s')->field('s.id,s.name,s.sex,s.age,s.add,s.type,s.guardian,s.number,c.name as c_name')
-                                   ->join('__CLASS__ c','c.id = s.class_id') 
+                                   ->join('class c','c.id = s.class_id') 
                                    ->where('s.status = 1')
                                    ->order('s.id desc')
                                    ->paginate(6);
@@ -99,7 +98,7 @@ class Student extends Base {
             $this->update();
             exit;
         }
-    
+        
         $id = $this->request->param('id',0,'intval');
         
         $student = Db::name('student')->find($id);
@@ -128,7 +127,9 @@ class Student extends Base {
         if(empty($data['add'])){
             $this->error('住址不能为空');
         }
-        //dump($data); exit;
+        if(empty($this->request->post('pic'))){
+            unset($data['pic']);
+        }
         $re = Db::name("student")->update($data);
     
         if(false !== $re){
@@ -144,7 +145,7 @@ class Student extends Base {
     public function trach() {
     
         $list = Db::name("student")->alias('s')->field('s.id,s.name,s.sex,s.age,s.add,s.type,s.guardian,s.number,c.name as c_name')
-                                   ->join('__CLASS__ c','c.id = s.class_id') 
+                                   ->join('class c','c.id = s.class_id') 
                                    ->where('s.status = 0')
                                    ->order('s.id desc')
                                    ->paginate(6);
@@ -195,20 +196,24 @@ class Student extends Base {
     
     // 详细资料
     public function getInfo() {
+        $result = ['status'=>0,'msg'=>'请求失败','data'=>[]];
         $id = $this->request->param('id',0,'intval');
         $s_db = Db::name('student');
         
         $where['s.id'] = $id;
-        $where['sc.type'] = 1;
+        
         $info =    $s_db->alias('s')
                         ->field('s.id , s.name, s.guardian , s.sex , s.age , s.pic , s.add , s.number ,c.name as c_name , t.name as t_name,  s.create_time , s.guardian , sc.english , sc.language , sc.math')
-                        ->join('class c',' c.id = s.class_id')
-                        ->join('teacher t',' c.teacher_id = t.id')
-                        ->join('score sc',' s.id = sc.student_id')
+                        ->leftJoin('class c',' c.id = s.class_id')
+                        ->leftJoin('teacher t',' c.teacher_id = t.id')
+                        ->leftJoin('score sc',' (s.id = sc.student_id and sc.status = 1)')
                         ->where($where)
                         ->find();
         
-        $info['create_time'] = date('Y-m-d',$info['create_time']);
+        if(!$info){
+            return json($result);
+        }
+        
         $info['sex'] = $this->sex[$info['sex']];
         
         $date = explode('-',$info['age']);
@@ -217,64 +222,8 @@ class Student extends Base {
         if(($on[1]*100+$on[2])>($date[1]*100+$date[2])){
             $info['onAge']++;
         }
-        
-        $html = "<div class='container' style='width:100%;' >
-        <div class='row'>
-        <div class='col-md-3'>
-        <label>姓名: {$info['name']}</label>
-        </div>
-        <div class='col-md-2 '>
-        <label>性别: {$info['sex']}</label>
-        </div>
-        <div class='col-md-5 '>
-        <label></label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-4 '>
-        <label>日生日期: {$info['age']}</label>
-        </div>
-        <div class='col-md-3 '>
-        <label>年龄: {$info['onAge']}</label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-3 '>
-        <label>班级: {$info['c_name']}</label>
-        </div>
-        <div class='col-md-3 '>
-        <label>班主任: {$info['t_name']}</label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-3'>
-        <label>监护人:{$info['guardian']}</label>
-        </div>
-        <div class='col-md-4'>
-        <label>电话 : {$info['number']}</label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-3 '>
-        <label>住址: {$info['add']}</label>
-        </div>
-        <div class='col-md-4 '>
-        <label>入学日期 : {$info['create_time']} </label>
-        </div>
-        </div>
-        <div class='row'>
-        <div class='col-md-3'>
-        <label>英语成绩 : {$info['english']}</label>
-        </div>
-        <div class='col-md-3'>
-        <label>数字成绩 : {$info['math']}</label>
-        </div>
-        <div class='col-md-3'>
-        <label>语文成绩 : {$info['language']}</label>
-        </div>
-        </div>      ";
-        
-        echo $html;
+        $result = ['status'=>1,'msg'=>'成功','data'=>$info];
+        return json($result);
         
     }
     

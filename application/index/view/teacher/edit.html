@@ -16,7 +16,7 @@ function uplode() {
 		success:function(re){
 			console.log(re);
 			if(re.code = 1){
-				$('#img').attr('src','/public/uplode/'+re.data.file_path);
+				$('#img').attr('src','{$Request.rootUrl}/uplode/'+re.data.file_path);
 				$(".hidden").remove();
 				$('#form_do').append("<input class='hidden' name='pic' type='hidden' value='"+re.data.file_path+"'>");
 			} else {
@@ -90,7 +90,7 @@ function uplode() {
 						<div class="col-sm-5">
 							<input class="form-control" type="file" name="pic" id="files" />
 							{if condition="!empty($teacher.pic)"}							
-							<img id="img" src="/public/uplode/{$teacher.pic}" style="width:180px;" alt="" />
+							<img id="img" src="{$Request.rootUrl}/uplode/{$teacher.pic}" style="width:180px;" alt="" />
 							{/if}
 							<button id="upbutton" class="btn btn-info" type="button" onclick="uplode()" >上传</button>
 						</div>

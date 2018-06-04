@@ -9,10 +9,18 @@
 				data:'id='+id,
 				success:function(re) {
 					console.log(re);
-					if(re){
-						$('.modal-body').append(re);
-					} else {
-						alert('操作失败,请刷新重试');
+					if(re.status == 1){
+						var html = "<div class='container' style='width:100%;' ><div class='row'><div class='col-md-3'><label>姓名: "+re.data['name']+"</label></div><div class='col-md-2 '><label>工号: "+re.data['id']+"</label></div><div class='col-md-5 '><label></label></div></div><div class='row'><div class='col-md-2 '><label>年龄: "+re.data['onAge']+"</label></div><div class='col-md-4'><label>出生日期: "+re.data['age']+"</label></div></div><div class='row'><div class='col-md-2'><label>性别: "+re.data['sex']+"</label></div><div class='col-md-3 '><label>专业: "+re.data['specialty']+"</label></div></div><div class='row'><div class='col-md-5 '><label>电话: "+re.data['number']+"</label></div></div><div class='row'><div class='col-md-6'><label>入职日期 :"+re.data['create_time']+"</label></div></div>"
+						var type = {'teacher':'班主任 :' , 'language':'语文 :','math':'数学 :','english':'英语 :'};
+						$.each(re.for,function(k,v){
+							html += "<div class='row'><div class='col-md-2'><label>"+type[k]+"</label></div>"
+							$.each(v,function(key,val){
+								html += "<div class='col-md-3'><label>"+val['name']+"</label></div>";
+							}) 				                
+							html += "</div>";
+						})
+				        html += "</div>";
+						$('.modal-body').append(html);
 					}
 				}
 			})

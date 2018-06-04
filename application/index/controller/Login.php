@@ -8,8 +8,7 @@ use Config;
 
 class Login extends Controller{
     
-    function index() {    
-        
+    function index() {
         return $this->fetch();
         
     }

@@ -116,6 +116,9 @@ class Grade extends Base{
            $this->erorr('班级名称不能为空'); 
         }
         $data['create_time'] = strtotime($data['create_time']);
+        if(empty($this->request->post('pic'))){
+            unset($data['pic']);
+        }
         if(db::name('class')->update($data) !== false ){
             $this->success('已成功更改',url('index'));
         } else {
@@ -197,6 +200,8 @@ class Grade extends Base{
     
     // 详细资料
     public function getInfo() {
+        
+        $re = ['status'=>1,'msg'=>'成功','data'=>[]];
         $id = $this->request->post('id',0,'intval');
         $t_db = Db::name('teacher');
         $info = Db::name('class')->find($id);
@@ -212,62 +217,10 @@ class Grade extends Base{
         $avg['math'] = round(Db::name('score')->where('class_id = '.$id)->avg('math'));
         $avg['language'] = round(Db::name('score')->where('class_id = '.$id)->avg('language'));
         $avg['english'] = round(Db::name('score')->where('class_id = '.$id)->avg('english'));
+        $re['data'] = $info;
+        $re['avg'] = $avg;
+        return json($re);
         
-        $html = "<div class='container' style='width:100%;' >
-                	<div class='row'>
-                		<div class='col-md-2'>
-                			<label>编号: {$info['id']}</label>
-                		</div>
-                		<div class='col-md-3 '>
-                			<label>班级名: {$info['name']}</label>
-                		</div>
-                		<div class='col-md-3 '>
-                			<label>学级: {$info['grade']}</label>
-                		</div>	               
-                		<div class='col-md-4 '>
-                			<label></label>
-                		</div> 		                         	
-                	</div>	
-					<div class='row'>
-                		<div class='col-md-3 '>
-                			<label>班主任: {$info['teacher']['name']}</label>
-                		</div>
-                		<div class='col-md-4'>
-                			<label>电话 : {$info['teacher']['number']}</label>
-                		</div>                		
-                	</div>
-                	<div class='row'>                		
-                		<div class='col-md-4 '>
-                			<label>入学日期 : {$info['create_time']} </label>
-                		</div>                		
-                	</div>
-                	<div class='row'>
-                		<div class='col-md-4'>
-                			<label>语文老师: {$info['language']['name']}</label>
-                		</div>
-                		<div class='col-md-4'>
-                			<label>语文平均成绩 : {$avg['language']}</label>
-                		</div>	 	                		
-                	</div>
-                	<div class='row'>
-                		<div class='col-md-4'>
-                			<label>数学老师: {$info['math']['name']}</label>
-                		</div>
-                		<div class='col-md-4'>
-                			<label>数学平均成绩 : {$avg['math']}</label>
-                		</div>	 	                		
-                	</div>
-                	<div class='row'>
-                		<div class='col-md-4'>
-                			<label>英语老师: {$info['english']['name']}</label>
-                		</div>
-                		<div class='col-md-4'>
-                			<label>英语平均成绩 : {$avg['english']}</label>
-                		</div>	 	                		
-                	</div>      ";
-        
-        echo $html; 
-                
     }
     
 }

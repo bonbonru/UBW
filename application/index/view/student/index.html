@@ -11,10 +11,9 @@
 				data:'id='+id,
 				success:function(re) {
 					console.log(re);
-					if(re){
-						$('.modal-body').append(re);
-					} else {
-						alert('操作失败,请刷新重试');
+					if(re.status == 1){
+						var html = "<div class='container' style='width: 100%;' > <div class='row'> <div class='col-md-3'> <label>姓名:"+re.data['name']+"</label> </div> <div class='col-md-2 '> <label>性别:"+re.data['sex']+"</label> </div> <div class='col-md-5 '> <label></label> </div> </div> <div class='row'> <div class='col-md-4 '> <label>日生日期:"+re.data['age']+"</label> </div> <div class='col-md-3 '> <label>年龄:"+re.data['onAge']+"</label> </div> </div> <div class='row'> <div class='col-md-3 '> <label>班级:"+re.data['c_name']+"</label> </div> <div class='col-md-3 '> <label>班主任:"+re.data['t_name']+"</label> </div> </div> <div class='row'> <div class='col-md-3'> <label>监护人:"+re.data['guardian']+"</label> </div> <div class='col-md-4'> <label>电话 :"+re.data['number']+"</label> </div> </div> <div class='row'> <div class='col-md-3 '> <label>住址:"+re.data['add']+"</label> </div> <div class='col-md-4 '> <label>入学日期 :"+re.data['create_time']+"</label> </div> </div> <div class='row'> <div class='col-md-3'> <label>英语成绩 :"+re.data['english']+"</label> </div> <div class='col-md-3'> <label>数字成绩 :"+re.data['math']+"</label> </div> <div class='col-md-3'> <label>语文成绩 :"+re.data['language']+"</label> </div> </div>";
+						$('.modal-body').append(html);
 					}
 				}
 			})

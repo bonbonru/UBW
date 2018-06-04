@@ -23,8 +23,8 @@ class Score extends Base{
         empty($searClass) ? : $sc_db -> where('sc.class_id = '.$searClass);
     
         $list = $sc_db  ->alias('sc')
-                        ->join('__STUDENT__ s ','s.id = sc.student_id')
-                        ->join('__CLASS__ c ','c.id = s.class_id')
+                        ->join('student s ','s.id = sc.student_id')
+                        ->join('class c ','c.id = s.class_id')
                         ->field('sc.id,s.name,c.name as c_name,sc.english,sc.language,sc.math,sc.create_time,sc.type')
                         ->where('sc.status = 1')
                         ->order('id desc')
@@ -34,8 +34,8 @@ class Score extends Base{
     
         if(!empty($searClass)){
             $classCount = Db::name('score')->alias('sc')
-                                ->join('__STUDENT__ s ',' s.id = sc.student_id')
-                                ->join('__CLASS__ c ',' c.id = s.class_id')
+                                ->join('student s ',' s.id = sc.student_id')
+                                ->join('class c ',' c.id = s.class_id')
                                 ->field('avg(sc.english) as english,avg(sc.math) as math,avg(sc.language) as language,c.name,count(*) as count')
                                 ->where('sc.class_id = '.$searClass)
                                 ->find();   
@@ -111,8 +111,8 @@ class Score extends Base{
     
         $score = DB::name('score')->alias('sc')
                             ->field('c.name as c_name,s.type,sc.create_time,s.id as s_id,s.name as s_name,sc.language,sc.english,sc.math,c.id as c_id,sc.id')
-                            ->join('__CLASS__ c ',' c.id = '.$score['class_id'])
-                            ->join('__STUDENT__ s ',' s.id = '.$score['student_id'])
+                            ->join('class c ',' c.id = '.$score['class_id'])
+                            ->join('student s ',' s.id = '.$score['student_id'])
                             ->where('sc.id = '.$id)
                             ->find();
     
@@ -160,8 +160,8 @@ class Score extends Base{
     public function trach() {
     
         $list = Db::name('score')->alias('sc')
-                                ->join('__STUDENT__ s ',' s.id = sc.student_id')
-                                ->join('__CLASS__ c ',' c.id = s.class_id')
+                                ->join('student s ',' s.id = sc.student_id')
+                                ->join('class c ',' c.id = s.class_id')
                                 ->field('sc.id,s.name,c.name as c_name,sc.english,sc.language,sc.math,sc.create_time,sc.type')
                                 ->where('sc.status = 0')
                                 ->order('id desc')
