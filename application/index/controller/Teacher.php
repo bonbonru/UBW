@@ -4,6 +4,7 @@ namespace app\index\controller;
 
 use think\Controller;
 use think\Db;
+use app\index\validate\Teacher as TeacherValidate;
 
 class Teacher extends Base {
     
@@ -12,13 +13,18 @@ class Teacher extends Base {
     
     public function index() {
         $where['status'] = 1;
-        $keyword = $this->request->post('keyword','','htmlspecialchars,rtrim');
+        
+        $keyword = $this->request->param('keyword','','htmlspecialchars,rtrim') ;
         
         $db = Db::name('teacher');
-        empty($keyword) ? "" : $db->whereLike('id|name',"%$keyword%");;
-               
-        $list = $db->where('status = 1')->order('id desc')->paginate(7);
-    
+        
+        if(empty($keyword)){
+            $list = $db->where('status = 1')->order('id desc')->paginate(7);            
+        } else {
+            $db->whereLike('id|name',"%$keyword%");
+            $list = $db->where('status = 1')->order('id desc')->paginate(7,false,['query'=>['keyword'=>$keyword]]);
+        }
+        
         $this->assign('keyword',$keyword);
         $this->assign('sex',$this->sex);
         $this->assign('list',$list);
@@ -30,12 +36,16 @@ class Teacher extends Base {
     }
     
     // 编辑页面
-    public function edit($id) {
-    
+    public function edit() {
+        
         if($this->request->isPost()){
-            $this->update();
-            exit;
+            return $this->update();
         }
+        
+        $id = $this->request->param('id',0,'intval');
+        
+        $id || $this->error('参数异常');
+        
         $teacher = Db::name('teacher')->find($id);
          
         $this->assign('teacher',$teacher);
@@ -46,18 +56,20 @@ class Teacher extends Base {
     
     // 编辑处理
     public function update(){
+        
         $data = $this->request->post();
         $data['create_time'] = strtotime($data['create_time']);
         $data['id'] = $this->request->post('id', 0, 'intval');
-        $data['name'] = $this->request->post('name','','htmlspecialchars,rtrim');
-        $data['pic'] =  $this->request->post('pic','');
-        if(empty($data['name'])){
-            $this->error('教师名不能为空');
+        
+        $result = $this->validate($data,'app\index\validate\Teacher.teacher');
+        
+        $vali = new TeacherValidate;
+        
+        if(!$vali->scene('teacher')->check($data)){
+            $this->error($vali->getError());
         }
-        $data['specialty'] = $this->request->post('specialty','','htmlspecialchars,rtrim');
-        if(empty($data['specialty'])){
-            $this->error('专业不能为空');
-        }
+
+        
         if(empty($this->request->post('pic'))){
             unset($data['pic']);
         }
@@ -75,8 +87,7 @@ class Teacher extends Base {
     public function add() {
     
         if($this->request->isPost()){
-            $this->addSave();
-            exit;
+            return $this->addSave();
         }
     
         return $this->fetch();
@@ -86,23 +97,16 @@ class Teacher extends Base {
     // 添加处理
     public function addSave() {
         
-        $data = $this->request->post();
-        $data['id'] = $this->request->post('id',0,'intval');
-        $data['create_time'] = strtotime($data['create_time']);
-        $data['name'] = $this->request->post('name','','htmlspecialchars,rtrim');
         $data['status'] = 1;
-        if(empty($data['name'])){
-            $this->error('教师名不能为空');
-        }
-        $data['specialty'] = $this->request->post('specialty','','htmlspecialchars,rtrim');
-        if(empty($data['specialty'])){
-            $this->error('专业不能为空');
-        }
-        $data['number'] = $this->request->post('number','','htmlspecialchars,rtrim');
-        if(empty($data['number'])){
-            $this->error('电话不能为空');
-        }
+        $data = $this->request->post();
+        $data['create_time'] = strtotime($data['create_time']);
         $data['pic'] = $this->request->post('pic','');
+     
+        $validater = new TeacherValidate;        
+        if (!$validater->scene('teacher')->check($data)) {
+            $this->error($validater->getError());
+        }
+        
         
         if(Db::name('teacher')->insert($data)) {
             $this->success('已成功添加教师资料',url('index'));
@@ -115,13 +119,15 @@ class Teacher extends Base {
     
     // 无状态删除
     public function del() {
-    
+        
         if($this->request->isPost()){
             $key = $this->request->post();
             $key = $key['key'];
         } else {
             $key = $this->request->param('id','','intval');
         }
+        
+        $key || $this->error('参数异常');
     
         if(Db::name('teacher')->where(['id'=>$key])->update(['status' => 0])){
             $this->success('已成功删除到回收站');
@@ -155,6 +161,8 @@ class Teacher extends Base {
         } else {
             $key = $this->request->param('id','','intval');
         }
+        
+        $key || $this->error('参数异常');
     
         if(Db::name('teacher')->where(['id'=>$key])->update(['status'=>1])){
             $this->success('已成功还原',url('index'));
@@ -170,6 +178,13 @@ class Teacher extends Base {
         $re = ['status'=>1,'msg'=>'成功','data'=>[]];
         
         $id = $this->request->param('id',0,'intval');
+        
+        if(empty($id)){
+            $re['status'] = 203;
+            $re['msg'] = '参数异常';
+            return json($re);
+        }
+        
         $info = Db::name('teacher')->find($id);
         $c_db = Db::name('class');
         $for['teacher'] = $c_db->field('name')->where('teacher_id = '.$id)->select();
@@ -204,7 +219,9 @@ class Teacher extends Base {
         } else {
             $key = $this->request->param('id','','intval');
         }
-    
+        
+        $key || $this->error('参数异常');
+        
         if(Db::name('teacher')->where(['id'=>$key])->delete()){
             $this->success('已彻底删除',url('index'));
         } else {

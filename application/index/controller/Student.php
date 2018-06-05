@@ -3,6 +3,7 @@
 namespace app\index\controller;
 
 use think\Db;
+use think\validate;
 
 class Student extends Base {
         
@@ -10,8 +11,9 @@ class Student extends Base {
     protected  $type = [1=>'一年级',2=>'二年级',3=>'三年级',4=>'四年级',5=>'五年级',6=>'六年级',7=>'初一',8=>'初二',9=>'初三'];
     
     public function index() {
-        $keyword = $this->request->param('keyword','','htmlspecialchars,trim');
-        $where = null;
+        
+        $keyword =  $this->request->param('keyword','','htmlspecialchars,rtrim');
+        
         $s_db = Db::name('student');
         
         if(!empty($keyword)){
@@ -19,10 +21,10 @@ class Student extends Base {
         }
         
         $list = $s_db->alias('s')->field('s.id,s.name,s.sex,s.age,s.add,s.type,s.guardian,s.number,c.name as c_name')
-                                   ->join('class c','c.id = s.class_id') 
-                                   ->where('s.status = 1')
-                                   ->order('s.id desc')
-                                   ->paginate(6);
+                                ->join('class c','c.id = s.class_id')
+                                ->where('s.status = 1')
+                                ->order('s.id desc')
+                                ->paginate(6,false,['query'=>['keyword'=>$keyword]]);
         
         $this->assign('sex',$this->sex);
         $this->assign('type',$this->type);
@@ -38,8 +40,7 @@ class Student extends Base {
     public function add() {
         
         if($this->request->isPost()){
-            $this->addSave();
-            exit;
+            return $this->addSave();            
         }
         
         $list = Db::name('class')->select();
@@ -51,18 +52,32 @@ class Student extends Base {
     
     // 添加处理
     public function addSave(){
-        $data = $this->request->post();
-        $data['status'] = 1;
-        $data['pic'] = $this->request->post('pic','');
-        $data['guardian'] = $this->request->post('guardian', '', 'htmlspecialchars,rtrim');
-        $data['name'] = $this->request->post('name', '', 'htmlspecialchars,rtrim');
-        $data['add'] = $this->request->post('add', '', 'htmlspecialchars,rtrim');
         
-        if(empty($data['name'])){
-            $this->error('名字不能为空');
-        }
-        if(empty($data['add'])){
-            $this->error('住址不能为空');
+        $data = $this->request->post();
+        
+        $data['status'] = 1;
+        
+        $rule = [
+            'name' => 'require|max:5',
+            'guardian' => 'max:5',
+            'number' => 'require|mobile',
+            'add' => 'max:20'
+        ];
+        
+        $message = [
+            'name.require' => '名字必需填写',
+            'name.max' => '名字的长度不能超过5位',
+            'guardian.max' => '监护人的长度不能超过5位',
+            'number.require' => '电话需要填写',
+            'number.mobile' => '电话格式不正确',
+            'add.max' => '地址不能超过20位'
+        ];
+        
+        $validate = Validate::make($rule,$message);
+        $validate -> check($data);
+        
+        if(true){
+           $this->error($validate->getError());
         }
         
         $re = Db::name('student')->insert($data);
@@ -81,7 +96,11 @@ class Student extends Base {
             $key = $this->request->post();
             $key = $key['key'];
         } else {
-            $key = $this->request->param('id','','intval');            
+            $key = $this->request->param('id',0,'intval');       
+        }
+        
+        if(empty($key)){
+            $this->error('参数异常');
         }
         
         if(Db::name('student')->where(['id'=>$key])->update(['status' => 0])){
@@ -101,6 +120,8 @@ class Student extends Base {
         
         $id = $this->request->param('id',0,'intval');
         
+        $id || $this->error('参数异常');
+        
         $student = Db::name('student')->find($id);
         $class = Db::name('class')->select();
         
@@ -115,21 +136,25 @@ class Student extends Base {
     public function update() {
     
         $data = $this->request->post();
-        $data['id'] = $this->request->post('id',0,'intval');
-        if(empty($data['id'])){
-            $this->error('参入错误');
+        $data['id'] = $this->request->post('id',0,'intval');       
+        
+        $rule = [
+            'name|名字' => 'require|max:5',
+            'guardian|监护人' => 'max:5',
+            'number|电话' => 'require|mobile',
+            'add|住址' => 'max:20'
+        ];
+        
+        $vali = validate::make()->rule($rule);
+       
+        if(!$vali->check($data)){
+            $this->error($vali->getError());
         }
-        $data['name'] = $this->request->post('name','','htmlspecialchars,rtrim');
-        if(empty($data['name'])){
-            $this->error('姓名不能为空');
-        }
-        $data['add'] = $this->request->post('add','','htmlspecialchars,rtrim');
-        if(empty($data['add'])){
-            $this->error('住址不能为空');
-        }
-        if(empty($this->request->post('pic'))){
+        
+        if(empty($data['pic'])){
             unset($data['pic']);
         }
+        
         $re = Db::name("student")->update($data);
     
         if(false !== $re){
@@ -166,9 +191,11 @@ class Student extends Base {
             $key = $this->request->post();
             $key = $key['key'];
         } else {
-            $key = $this->request->param('id','','intval');            
+            $key = $this->request->param('id',0,'intval');            
         }
-    
+        
+        $key || $this->error('参数异常');
+        
         if(Db::name('student')->where(['id'=>$key])->update(['status'=>1])){
             $this->success('已成功还原',url('index'));
         } else {
@@ -186,6 +213,8 @@ class Student extends Base {
         } else {
             $key = $this->request->param('id','','intval');            
         }
+        
+        $key || $this->error('参数异常');
     
         if(Db::name('student')->where(['id'=>$key])->delete()){
             $this->success('已彻底删除',url('index'));
@@ -198,6 +227,13 @@ class Student extends Base {
     public function getInfo() {
         $result = ['status'=>0,'msg'=>'请求失败','data'=>[]];
         $id = $this->request->param('id',0,'intval');
+        
+        if(empty($id)){
+            $result['status'] = 203;
+            $result['msg'] = '参数异常';
+            return json($result);
+        }
+        
         $s_db = Db::name('student');
         
         $where['s.id'] = $id;

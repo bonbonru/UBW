@@ -2,9 +2,11 @@
 
 namespace app\index\controller;
 
+use app\index\validate\Teacher as TeacherValidate;
+
 use think\Controller;
 use think\Db;
-use think\Response;
+
 
 class Score extends Base{
     
@@ -14,10 +16,11 @@ class Score extends Base{
     public function index() {
     
         $searClass = $this->request->post('searClass',0,'intval');
-        $keyword = $this->request->post('keyword', '', 'htmlspecialchars,trim');
-    
+        $keyword = $this->request->param('keyword', '', 'htmlspecialchars,trim'); 
+        
         $sc_db = Db::name('score');
-        if($this->request->isPost()){
+        
+        if( $keyword != null ){
             $sc_db->whereLike('sc.id|s.name',"%{$keyword}%");
         }
         empty($searClass) ? : $sc_db -> where('sc.class_id = '.$searClass);
@@ -28,7 +31,7 @@ class Score extends Base{
                         ->field('sc.id,s.name,c.name as c_name,sc.english,sc.language,sc.math,sc.create_time,sc.type')
                         ->where('sc.status = 1')
                         ->order('id desc')
-                        ->paginate(5);
+                        ->paginate(5,false,['query'=>['keyword'=>$keyword]]);
                         
         $class = Db::name('class')->field('id,name')->select();
     
@@ -41,7 +44,7 @@ class Score extends Base{
                                 ->find();   
             $this->assign('classCount',$classCount);
         }
-    
+
         $this->assign('list',$list);
         $this->assign('class',$class);
         $this->assign('searClass',$searClass);
@@ -56,8 +59,7 @@ class Score extends Base{
     public function add() {
         
         if ($this->request->isPost()) {        
-            $this->addSave();
-            exit();
+            return $this->addSave();            
         }
         
         $list = DB::name('class')->select();
@@ -74,20 +76,14 @@ class Score extends Base{
     
         $data = $this->request->param();
         $data['status'] = 1;
-        $data['id'] = $this->request->param('id',0,'intval');
-        $data['student_id'] = $this->request->param('student_id',0,'intval');
-        if(empty($data['student_id'])){
-            $this->error('请选择学生');
+        
+        $vali = new TeacherValidate;
+        if(!$vali->scene('score')->check($data)){
+            $this->error($vali->getError());
         }
-        $data['language'] = $this->request->param('language',0,'intval');
-        $data['math'] = $this->request->param('math',0,'intval');
-        $data['english'] = $this->request->param('english',0,'intval');
-        if(($data['language']==0 or $data['english'] == 0 or $data['math'] == 0) or ($data['language']>100 or $data['english']>100 or $data['math']>100 )){
-            $this->error('各科成绩不能为空 ,而且输入0-100数字');
-        }
-    
+        
         $re = Db::name('score')->insert($data);
-    
+        
         if($re){
             $this->success('已成功添加新资料',url('index'));
         } else {
@@ -102,23 +98,25 @@ class Score extends Base{
     public function edit() {
     
         if($this->request->isPost()){
-            $this->update();
-            exit;
+            return  $this->update();
         }
         
         $id = $this->request->param('id',0,'intval');
+        
+        $id || $this->error('参数异常');
+        
         $score = DB::name('score')->find($id);
-    
+        
         $score = DB::name('score')->alias('sc')
                             ->field('c.name as c_name,s.type,sc.create_time,s.id as s_id,s.name as s_name,sc.language,sc.english,sc.math,c.id as c_id,sc.id')
                             ->join('class c ',' c.id = '.$score['class_id'])
                             ->join('student s ',' s.id = '.$score['student_id'])
                             ->where('sc.id = '.$id)
                             ->find();
-    
+        
         $class = Db::name('class')->field('id,name')->where('status = 1')->select();
         $student = Db::name('student')->field('id,name')->where(['status'=>1,'class_id'=>$score['c_id']])->select();
-    
+        
         $this->assign('type',$this->type);
         $this->assign('class',$class);
         $this->assign('student',$student);
@@ -134,17 +132,14 @@ class Score extends Base{
     
         $data = $this->request->param();
         $data['id'] = $this->request->param('id',0,'intval');
-        $data['student_id'] = $this->request->param('student_id',0,'intval');
-        if(empty($data['student_id'])){
-            $this->error('请选择学生');
+        
+        $data['id'] || $this->error('参数异常');
+        
+        $vali = new TeacherValidate;
+        if(!$vali->scene('score')->check($data)){
+            $this->error($vali->getError());
         }
-        $data['language'] = $this->request->param('language',0,'intval');
-        $data['math'] = $this->request->param('math',0,'intval');
-        $data['english'] = $this->request->param('english',0,'intval');
-        if(($data['language']==0 or $data['english'] == 0 or $data['math'] == 0) or ($data['language']>100 or $data['english']>100 or $data['math']>100 )){
-            $this->error('各科成绩不能为空 ,而且输入0-100数字');
-        }
-    
+        
         $re = Db::name("score")->update($data);
         
         if(false !== $re){

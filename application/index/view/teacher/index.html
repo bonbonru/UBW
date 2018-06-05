@@ -101,7 +101,7 @@
 			</div>
 			<div class="col-sm-6 text-right">
 				{if condition='request()->action() eq "index"'}
-				<form class="form-inline" method="post" action="#">
+				<form class="form-inline" method="post" action="{:url('index')}">
 					<div class="form-group">
 						<label class="sr-only" for="inputKeyword">关键字</label> <input
 							type="text" class="form-control" name="keyword" id="inputKeyword"
