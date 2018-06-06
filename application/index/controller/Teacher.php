@@ -69,7 +69,6 @@ class Teacher extends Base {
             $this->error($vali->getError());
         }
 
-        
         if(empty($this->request->post('pic'))){
             unset($data['pic']);
         }

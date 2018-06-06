@@ -3,10 +3,11 @@
 namespace app\index\controller;
 
 use app\index\validate\Teacher as TeacherValidate;
-
 use think\Controller;
 use think\Db;
+use app\index\model\Score as ScoreModel;
 
+use app\index\model\Grade;
 
 class Score extends Base{
     
@@ -14,8 +15,18 @@ class Score extends Base{
     
     // 列表首页
     public function index() {
-    
+        
         $searClass = $this->request->post('searClass',0,'intval');
+        $keyword = $this->request->param('keyword', '', 'htmlspecialchars,trim');
+        
+        $score = ScoreModel::hasWhere('student', ScoreModel::search($keyword,$searClass))
+                           ->order('id desc')
+                           ->paginate(5);
+        
+        $class = Grade::field('id,name')->select();
+        
+        
+        /* $searClass = $this->request->post('searClass',0,'intval');
         $keyword = $this->request->param('keyword', '', 'htmlspecialchars,trim'); 
         
         $sc_db = Db::name('score');
@@ -33,32 +44,34 @@ class Score extends Base{
                         ->order('id desc')
                         ->paginate(5,false,['query'=>['keyword'=>$keyword]]);
                         
-        $class = Db::name('class')->field('id,name')->select();
+        $class = Db::name('class')->field('id,name')->select();         */
+        
     
         if(!empty($searClass)){
-            $classCount = Db::name('score')->alias('sc')
-                                ->join('student s ',' s.id = sc.student_id')
+            /* $classCount = Db::name('score')->alias('sc')
                                 ->join('class c ',' c.id = s.class_id')
                                 ->field('avg(sc.english) as english,avg(sc.math) as math,avg(sc.language) as language,c.name,count(*) as count')
                                 ->where('sc.class_id = '.$searClass)
                                 ->find();   
+            $this->assign('classCount',$classCount); */
+            $classCount = ScoreModel::hasWhere('grade', ScoreModel::search('',$searClass))
+                                    ->field('avg(english) as english,avg(math) as math,avg(language) as language,count(*) as count')
+                                    ->find();
             $this->assign('classCount',$classCount);
-        }
-
-        $this->assign('list',$list);
+        }   
+        $this->assign('list',$score);
         $this->assign('class',$class);
         $this->assign('searClass',$searClass);
         $this->assign('title','成绩资料');
-        $this->assign('type',$this->type);
-        $this->assign('keyword',$keyword);
+        $this->assign('keyword',$keyword); 
     
-        return $this->fetch();
+        return $this->fetch();  
     }
     
     // 添加页面
     public function add() {
         
-        if ($this->request->isPost()) {        
+        if ($this->request->isPost()) {      
             return $this->addSave();            
         }
         

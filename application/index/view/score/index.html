@@ -91,12 +91,12 @@
                         <tr>
                             <td><input type="checkbox" name="key[]" value="{$v.id}"></td>
                             <td>{$v.id}</td>
-                            <td>{$v.name}</td>
-                            <td>{$v.c_name}</td>
+                            <td>{$v.student.name}</td>
+                            <td>{$v.grade.name}</td>
                             <td>{$v.language}</td>
                             <td>{$v.math}</td>
                             <td>{$v.english}</td>
-                            <td>{$type[$v['type']]}</td> 
+                            <td>{$v.type}</td> 
                             <td>{$v.create_time}</td>                                  
                             <td class="text-right">
                             {if condition='request()->action() eq "index"'}
@@ -116,7 +116,7 @@
 			{if condition="!empty($searClass)" }
 			<div class="row">
 				<div class="col-md-12 column">
-					&nbsp;&nbsp;<span class="label label-primary">{$classCount.name}</span>
+					&nbsp;&nbsp;<span class="label label-primary">{$classCount.grade.name}</span>
 					&nbsp;&nbsp;<span class="label label-primary">总人数 : {$classCount.count}</span>
 					&nbsp;&nbsp;<span class="label label-primary">语文平均成绩 : {$classCount.language|round="2"}</span>
 					&nbsp;&nbsp;<span class="label label-primary">数字平均成绩 : {$classCount.math|round="2"}</span>
