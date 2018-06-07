@@ -10,9 +10,14 @@
 				type:'post' ,
 				data:'id='+id,
 				success:function(re) {
-					console.log(re);
+					console.log(re.data.score);
 					if(re.status == 1){
-						var html = "<div class='container' style='width: 100%;' > <div class='row'> <div class='col-md-3'> <label>姓名:"+re.data['name']+"</label> </div> <div class='col-md-2 '> <label>性别:"+re.data['sex']+"</label> </div> <div class='col-md-5 '> <label></label> </div> </div> <div class='row'> <div class='col-md-4 '> <label>日生日期:"+re.data['age']+"</label> </div> <div class='col-md-3 '> <label>年龄:"+re.data['onAge']+"</label> </div> </div> <div class='row'> <div class='col-md-3 '> <label>班级:"+re.data['c_name']+"</label> </div> <div class='col-md-3 '> <label>班主任:"+re.data['t_name']+"</label> </div> </div> <div class='row'> <div class='col-md-3'> <label>监护人:"+re.data['guardian']+"</label> </div> <div class='col-md-4'> <label>电话 :"+re.data['number']+"</label> </div> </div> <div class='row'> <div class='col-md-3 '> <label>住址:"+re.data['add']+"</label> </div> <div class='col-md-4 '> <label>入学日期 :"+re.data['create_time']+"</label> </div> </div> <div class='row'> <div class='col-md-3'> <label>英语成绩 :"+re.data['english']+"</label> </div> <div class='col-md-3'> <label>数字成绩 :"+re.data['math']+"</label> </div> <div class='col-md-3'> <label>语文成绩 :"+re.data['language']+"</label> </div> </div>";
+						var html = "<div class='container' style='width: 100%;' > <div class='row'> <div class='col-md-3'> <label>姓名:"+re.data['name']+"</label> </div> <div class='col-md-2 '> <label>性别:"+re.data['sex']+"</label> </div> <div class='col-md-5 '> <label></label> </div> </div> <div class='row'> <div class='col-md-4 '> <label>日生日期:"+re.data['age']+"</label> </div> <div class='col-md-3 '> <label>年龄:"+re.data['onAge']+"</label> </div> </div> <div class='row'> <div class='col-md-3 '> <label>班级:"+re.data.grade.name+"</label> </div> <div class='col-md-3 '> <label>班主任:"+re.data.grade.teacher.name+"</label> </div> </div> <div class='row'> <div class='col-md-3'> <label>监护人:"+re.data['guardian']+"</label> </div> <div class='col-md-4'> <label>电话 :"+re.data['number']+"</label> </div> </div> <div class='row'> <div class='col-md-3 '> <label>住址:"+re.data['add']+"</label> </div> <div class='col-md-4 '> <label>入学日期 :"+re.data['create_time']+"</label> </div> </div>  ";
+						$.each(re.data.score,function(k,v){
+							html += "<div class='row '>  <div class='col-md-3'> <label> "+v.type+" :</label> </div> </div>"
+							html += "<div class='row text-right'> <div class='col-md-3'> <label>英语成绩 :"+v.english+"</label> </div> <div class='col-md-3'> <label>数字成绩 :"+v.math+"</label> </div> <div class='col-md-3'> <label>语文成绩 :"+v.language+"</label> </div> </div> ";	
+						})
+						html += "</div>";
 						$('.modal-body').append(html);
 					}
 				}
@@ -135,10 +140,10 @@
 									<td><input type="checkbox" name="key[]" value="{$v.id}"></td>
 									<td>{$v.id}</td>
 									<td>{$v.name}</td>
-									<td>{$sex[$v['sex']]}</td>
+									<td>{$v.sex}</td>
 									<td>{$v.age}</td>
-									<td>{$type[$v['type']]}</td>
-									<td>{$v['c_name']}</td>
+									<td>{$v.type}</td>
+									<td>{$v.grade.name}</td>
 									<td>{$v.guardian}</td>
 									<td>{$v.number}</td>
 									<td>{$v.add}</td>

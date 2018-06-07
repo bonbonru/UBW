@@ -86,7 +86,7 @@ function getStudent() {
 						<div class="col-sm-2">
 							<select id="selectClass" name="class_id" class="form-control" onchange="getStudent()">
 								{volist name="class" id="v"}
-								<option value="{$v.id}" {if condition="$score['c_id'] eq $v['id']"} selected="selected" {/if} >{$v.name}</option>							
+								<option value="{$v.id}" {if $score->grade->id == $v.id } selected="selected" {/if} >{$v.name}</option>							
 								{/volist}
 							</select>			
 						</div>	
@@ -94,7 +94,7 @@ function getStudent() {
 						<div class="col-sm-2">
 							<select id="selectStudent" name="student_id" class="form-control">
 								{volist name="student" id="v"}
-								<option value="{$v.id}" {if condition="$score['s_id'] eq $v['id']"} selected="selected" {/if} >{$v.name}</option>
+								<option value="{$v.id}" {if $score->student->id == $v.id} selected="selected" {/if} >{$v.name}</option>
 								{/volist}
 							</select>			
 						</div>					

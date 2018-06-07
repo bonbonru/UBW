@@ -2,8 +2,6 @@
 namespace app\index\model;
 
 use think\Model;
-use think\model\relation\HasOne;
-use app\index\model\Score as ScoreModel;
 
 class Score extends Model{
     
@@ -20,19 +18,18 @@ class Score extends Model{
     }
     
     // 全局范围查询   User::useGlobalScope(false);
-   /*  public function base($query) {  
+    /* public function base($query) {  
         $query->where('status = 1');
     } */
     
     // 搜索框
     public function scopeSearch($query,$keyword,$searClass) {
-        if(!empty($keyword) || $keyword == '0' ){          
-            $query -> wherelike('score.id',"%{$keyword}%");
+        if(!empty($keyword) || $keyword == '0' ){    
+            $query -> wherelike('score.id|student.name',"%{$keyword}%");
         }
         if(!empty($searClass)){
-            $query->where('score.class_id = '.$searClass);
-        }
-        
+            $query -> where('score.class_id',$searClass);
+        } 
     }
     
     // 状态获取

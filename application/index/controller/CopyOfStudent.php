@@ -4,8 +4,6 @@ namespace app\index\controller;
 
 use think\Db;
 use think\validate;
-use app\index\model\Student as StudentModel;
-use app\index\model\Grade;
 
 class Student extends Base {
         
@@ -13,11 +11,23 @@ class Student extends Base {
     protected  $type = [1=>'一年级',2=>'二年级',3=>'三年级',4=>'四年级',5=>'五年级',6=>'六年级',7=>'初一',8=>'初二',9=>'初三'];
     
     public function index() {
-        // 搜索条件
-        $keyword =  $this->request->param('keyword','','htmlspecialchars,rtrim');
-        // 列表集
-        $list = StudentModel::Search($keyword)->order('id desc')->paginate(5,false,['query'=>['keyword'=>$keyword]]);
         
+        $keyword =  $this->request->param('keyword','','htmlspecialchars,rtrim');
+        
+        $s_db = Db::name('student');
+        
+        if(!empty($keyword)){
+            $s_db->whereLike('s.id|s.name',"%$keyword%");
+        }
+        
+        $list = $s_db->alias('s')->field('s.id,s.name,s.sex,s.age,s.add,s.type,s.guardian,s.number,c.name as c_name')
+                                ->join('class c','c.id = s.class_id')
+                                ->where('s.status = 1')
+                                ->order('s.id desc')
+                                ->paginate(6,false,['query'=>['keyword'=>$keyword]]);
+        
+        $this->assign('sex',$this->sex);
+        $this->assign('type',$this->type);
         $this->assign('list',$list);
         $this->assign('title','学生资料');
         $this->assign('keyword',$keyword);
@@ -33,8 +43,7 @@ class Student extends Base {
             return $this->addSave();            
         }
         
-        $list = Grade::all();
-        
+        $list = Db::name('class')->select();
         $this->assign('list',$list);
         $this->assign('title','添加学生');
         
@@ -46,12 +55,15 @@ class Student extends Base {
         
         $data = $this->request->post();
         
+        $data['status'] = 1;
+        
         $rule = [
             'name' => 'require|max:5',
             'guardian' => 'max:5',
             'number' => 'require|mobile',
             'add' => 'max:20'
         ];
+        
         $message = [
             'name.require' => '名字必需填写',
             'name.max' => '名字的长度不能超过5位',
@@ -60,16 +72,17 @@ class Student extends Base {
             'number.mobile' => '电话格式不正确',
             'add.max' => '地址不能超过20位'
         ];
-        // 验证
+        
         $validate = Validate::make($rule,$message);
-        $re = $validate -> check($data);    
-        if(true !== $re){
+        $validate -> check($data);
+        
+        if(true){
            $this->error($validate->getError());
         }
         
-        $result = StudentModel::create($data);
+        $re = Db::name('student')->insert($data);
     
-        if($result){
+        if($re){
             $this->success('已成功添加新资料',url('index'));
         } else {
             $this->error('添加失败请重试');
@@ -90,9 +103,7 @@ class Student extends Base {
             $this->error('参数异常');
         }
         
-        $re = StudentModel::where(['id'=>$key])->update(['status'=>0]);
-        
-        if($re){
+        if(Db::name('student')->where(['id'=>$key])->update(['status' => 0])){
             $this->success('已成功删除到回收站');
         } else {
             $this->error('删除失败,请重试');
@@ -111,8 +122,8 @@ class Student extends Base {
         
         $id || $this->error('参数异常');
         
-        $student = StudentModel::find($id);
-        $class = StudentModel::all();
+        $student = Db::name('student')->find($id);
+        $class = Db::name('class')->select();
         
         $this->assign('title','编辑页面');
         $this->assign('class',$class);
@@ -133,17 +144,20 @@ class Student extends Base {
             'number|电话' => 'require|mobile',
             'add|住址' => 'max:20'
         ];
-        // 验证
+        
         $vali = validate::make()->rule($rule);
+       
         if(!$vali->check($data)){
             $this->error($vali->getError());
         }
+        
         if(empty($data['pic'])){
             unset($data['pic']);
         }
         
-        $re = StudentModel::update($data);
-        if($re){
+        $re = Db::name("student")->update($data);
+    
+        if(false !== $re){
             $this->success('已成功修改',url('index'));
         } else {
             $this->error('操作失败请重试');
@@ -155,11 +169,17 @@ class Student extends Base {
     // 回收站页面
     public function trach() {
     
-        $list = StudentModel::useGlobalScope(false)->where('status = 0')->order('id desc')->paginate(5);
+        $list = Db::name("student")->alias('s')->field('s.id,s.name,s.sex,s.age,s.add,s.type,s.guardian,s.number,c.name as c_name')
+                                   ->join('class c','c.id = s.class_id') 
+                                   ->where('s.status = 0')
+                                   ->order('s.id desc')
+                                   ->paginate(6);
         
+        $this->assign('sex',$this->sex);
         $this->assign('list',$list);
         $this->assign('title','学生回收站');
-
+        $this->assign('type',$this->type);
+    
         return $this->fetch('index');
     
     }
@@ -176,9 +196,7 @@ class Student extends Base {
         
         $key || $this->error('参数异常');
         
-        $re = StudentModel::useGlobalScope(false)->where(['id'=>$key])->update(['status'=>1]);
-        
-        if($re){
+        if(Db::name('student')->where(['id'=>$key])->update(['status'=>1])){
             $this->success('已成功还原',url('index'));
         } else {
             $this->error('还原失败,请重试');
@@ -197,10 +215,8 @@ class Student extends Base {
         }
         
         $key || $this->error('参数异常');
-        
-        $re = StudentModel::useGlobalScope(false)->delete($key);
-        
-        if($re){
+    
+        if(Db::name('student')->where(['id'=>$key])->delete()){
             $this->success('已彻底删除',url('index'));
         } else {
             $this->error('删除失败,请重试');
@@ -218,20 +234,29 @@ class Student extends Base {
             return json($result);
         }
         
-        $info = StudentModel::find($id,'score,grade');
+        $s_db = Db::name('student');
         
-        $info->grade->teacher->name;
-        $info->score;
+        $where['s.id'] = $id;
+        
+        $info =    $s_db->alias('s')
+                        ->field('s.id , s.name, s.guardian , s.sex , s.age , s.pic , s.add , s.number ,c.name as c_name , t.name as t_name,  s.create_time , s.guardian , sc.english , sc.language , sc.math')
+                        ->leftJoin('class c',' c.id = s.class_id')
+                        ->leftJoin('teacher t',' c.teacher_id = t.id')
+                        ->leftJoin('score sc',' (s.id = sc.student_id and sc.status = 1)')
+                        ->where($where)
+                        ->find();
         
         if(!$info){
             return json($result);
         }
         
+        $info['sex'] = $this->sex[$info['sex']];
+        
         $date = explode('-',$info['age']);
         $on = explode('-',date('Y-m-d',time()));
-        $info->onAge = $on[0] - $date[0];
+        $info['onAge'] = $on[0] - $date[0];
         if(($on[1]*100+$on[2])>($date[1]*100+$date[2])){
-            $info->onAge++;
+            $info['onAge']++;
         }
         $result = ['status'=>1,'msg'=>'成功','data'=>$info];
         return json($result);

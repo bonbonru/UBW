@@ -5,6 +5,8 @@ namespace app\index\controller;
 use think\Controller;
 use think\Db;
 use app\index\validate\Teacher as TeacherValidate;
+use app\index\model\Teacher as TeacherModel;
+use app\index\model\Grade;
 
 class Teacher extends Base {
     
@@ -12,21 +14,14 @@ class Teacher extends Base {
     
     
     public function index() {
-        $where['status'] = 1;
         
         $keyword = $this->request->param('keyword','','htmlspecialchars,rtrim') ;
         
         $db = Db::name('teacher');
         
-        if(empty($keyword)){
-            $list = $db->where('status = 1')->order('id desc')->paginate(7);            
-        } else {
-            $db->whereLike('id|name',"%$keyword%");
-            $list = $db->where('status = 1')->order('id desc')->paginate(7,false,['query'=>['keyword'=>$keyword]]);
-        }
+        $list = TeacherModel::Search($keyword)->order('id desc')->paginate(5,false,[ 'query'=>['keyword'=>$keyword] ]);
         
         $this->assign('keyword',$keyword);
-        $this->assign('sex',$this->sex);
         $this->assign('list',$list);
         $this->assign('title','教师资料');
         $this->assign('info','老师详情');
@@ -46,7 +41,13 @@ class Teacher extends Base {
         
         $id || $this->error('参数异常');
         
-        $teacher = Db::name('teacher')->find($id);
+        $teacher = TeacherModel::get($id);
+        
+        echo $teacher->getData('sex');
+        
+        if(!$teacher){
+            $this->error('页面错误');
+        }
          
         $this->assign('teacher',$teacher);
         $this->assign('title','教师信息编辑');
@@ -61,19 +62,16 @@ class Teacher extends Base {
         $data['create_time'] = strtotime($data['create_time']);
         $data['id'] = $this->request->post('id', 0, 'intval');
         
-        $result = $this->validate($data,'app\index\validate\Teacher.teacher');
-        
         $vali = new TeacherValidate;
-        
         if(!$vali->scene('teacher')->check($data)){
             $this->error($vali->getError());
         }
-
         if(empty($this->request->post('pic'))){
             unset($data['pic']);
         }
-        $re = Db::name('teacher')->update($data);
-        if(false !== $re) {
+        
+        $re = TeacherModel::update($data);
+        if($re) {
             $this->success('已操作成功',url('index'));
         } else {
             $this->error('操作失败请重试');
@@ -96,18 +94,17 @@ class Teacher extends Base {
     // 添加处理
     public function addSave() {
         
-        $data['status'] = 1;
         $data = $this->request->post();
         $data['create_time'] = strtotime($data['create_time']);
         $data['pic'] = $this->request->post('pic','');
-     
+        
         $validater = new TeacherValidate;        
         if (!$validater->scene('teacher')->check($data)) {
             $this->error($validater->getError());
         }
+        $re = TeacherModel::create($data);
         
-        
-        if(Db::name('teacher')->insert($data)) {
+        if($re) {
             $this->success('已成功添加教师资料',url('index'));
         } else {
             $this->error('添加资料失败,请重试');
@@ -127,8 +124,9 @@ class Teacher extends Base {
         }
         
         $key || $this->error('参数异常');
-    
-        if(Db::name('teacher')->where(['id'=>$key])->update(['status' => 0])){
+        
+        $re = TeacherModel::where([ 'id'=>$key ])->update([ 'status'=>0 ]);
+        if($re){
             $this->success('已成功删除到回收站');
         } else {
             $this->error('删除失败,请重试');
@@ -141,9 +139,8 @@ class Teacher extends Base {
         
         $db = Db::name('teacher');
         
-        $list = $db->where('status = 0')->order('id desc')->paginate(7);
+        $list = TeacherModel::useGlobalScope(false)->where('status = 0')->order('id desc')->paginate(5);
     
-        $this->assign('sex',$this->sex);
         $this->assign('list',$list);
         $this->assign('title','教师回收站');
     
@@ -162,8 +159,9 @@ class Teacher extends Base {
         }
         
         $key || $this->error('参数异常');
-    
-        if(Db::name('teacher')->where(['id'=>$key])->update(['status'=>1])){
+        
+        $re = TeacherModel::useGlobalScope(false)->where( [ 'id'=>$key ])->update( [ 'status'=>1 ]);
+        if($re){
             $this->success('已成功还原',url('index'));
         } else {
             $this->error('还原失败,请重试');
@@ -171,12 +169,31 @@ class Teacher extends Base {
         
     }
     
+    // 彻底删除
+    public function clear() {
+    
+        if($this->request->isPost()){
+            $key = $this->request->post();
+            $key = $key['key'];
+        } else {
+            $key = $this->request->param('id','','intval');
+        }
+    
+        $key || $this->error('参数异常');
+        $re = TeacherModel::useGlobalScope(false)->delete($key);
+        if($re){
+            $this->success('已彻底删除',url('index'));
+        } else {
+            $this->error('删除失败,请重试');
+        }
+    
+    }
     
     // 获取详细信息
     public function getInfo() {
         $re = ['status'=>1,'msg'=>'成功','data'=>[]];
         
-        $id = $this->request->param('id',0,'intval');
+        $id = $this->request->param('id',41,'intval');
         
         if(empty($id)){
             $re['status'] = 203;
@@ -185,6 +202,30 @@ class Teacher extends Base {
         }
         
         $info = Db::name('teacher')->find($id);
+        
+        $info = TeacherModel::get($id);
+        
+        $className = Grade::where('teacher_id|english_id|language_id|math_id',$id)
+                          ->field('id,name,teacher_id,language_id,math_id,english_id')
+                          ->select();
+        $array = [];    
+        foreach ($className as $v) {
+            if($v['teacher_id'] == 41){
+                $array['teacher_id'][$v['id']] = $v['name']; 
+            }
+            if($v['english_id'] == 41){
+                $array['english_id'][$v['id']] = $v['name'];
+            }
+            if($v['language_id'] == 41){
+                $array['language_id'][$v['id']] = $v['name'];
+            }
+            if($v['teacher_id'] == 41){
+                $array['math_id'][$v['id']] = $v['name'];
+            }
+        }
+        
+        
+        dump($array); 
         $c_db = Db::name('class');
         $for['teacher'] = $c_db->field('name')->where('teacher_id = '.$id)->select();
         $for['english'] = $c_db->field('id , name')->where('english_id = '.$id)->select();
@@ -200,33 +241,11 @@ class Teacher extends Base {
         if(($on[1]*100+$on[2])>($date[1]*100+$date[2])){
             $info['onAge']++;
         }
-        
+        dump($for); exit;
         $re['data'] = $info;
         $re['for'] = $for;
         
         return json($re);
-        
-    }
-    
-    
-    // 彻底删除
-    public function clear() {
-    
-        if($this->request->isPost()){
-            $key = $this->request->post();
-            $key = $key['key'];
-        } else {
-            $key = $this->request->param('id','','intval');
-        }
-        
-        $key || $this->error('参数异常');
-        
-        if(Db::name('teacher')->where(['id'=>$key])->delete()){
-            $this->success('已彻底删除',url('index'));
-        } else {
-            $this->error('删除失败,请重试');
-        }
-        
     }
     
     // 图片上传

@@ -68,8 +68,8 @@ function uplode() {
 							<label for="inputSex" class="col-sm-1 control-label" >性别</label>
 							<div class="col-sm-1 control-label" >
 								<select name="sex" id="inputSex" class="form-control" >
-									<option value="1" {if condition="$teacher['sex'] eq 1"}selected="selected" {/if} >男</option>
-									<option value="0" {if condition="$teacher['sex'] eq 0"}selected="selected" {/if} >女</option>
+									<option value="1" {if $teacher->getData('sex') == 1 }selected="selected" {/if} >男</option>
+									<option value="0" {if $teacher->getData('sex') == 0 }selected="selected" {/if} >女</option>
 								</select>														
 							</div> 															
 					</div>					

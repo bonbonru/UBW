@@ -21,7 +21,6 @@ class Score extends Base{
         $keyword = $this->request->param('keyword', '', 'htmlspecialchars,trim');
         // 列表
         $score = ScoreModel::hasWhere('student', ScoreModel::search($keyword,$searClass))
-                           ->where('score.status = 1')
                            ->order('score.id desc')
                            ->paginate(5,false,['query'=>['keyword'=>$keyword,'searClass'=>$searClass]]);
         // 下拉班级选择
@@ -30,7 +29,6 @@ class Score extends Base{
         if(!empty($searClass)){
             $classCount = ScoreModel::hasWhere('grade',ScoreModel::search('',$searClass))
                                     ->field('avg(english) as english,avg(math) as math,avg(language) as language,count(*) as count')
-                                    ->where('score.status = 1')
                                     ->find();
             $this->assign('classCount',$classCount);
         }
@@ -118,15 +116,14 @@ class Score extends Base{
         
         $data['id'] || $this->error('参数异常');
         
-        // 验证
         $vali = new TeacherValidate;
         if(!$vali->scene('score')->check($data)){
             $this->error($vali->getError());
         }
         
-        $re = ScoreModel::update($data);
-        
-        if($re){
+        $re = Db::name("score")->update($data);
+               
+        if(false !== $re){
             $this->success('已成功修改',url('index'));
         } else {
             $this->error('操作失败请重试');
@@ -137,8 +134,14 @@ class Score extends Base{
     
     // 回收站页面
     public function trach() {
-
-        $list = ScoreModel::where('status = 0')->order('id desc')->paginate(5);
+    
+        $list = Db::name('score')->alias('sc')
+                                ->join('student s ',' s.id = sc.student_id')
+                                ->join('class c ',' c.id = s.class_id')
+                                ->field('sc.id,s.name,c.name as c_name,sc.english,sc.language,sc.math,sc.create_time,sc.type')
+                                ->where('sc.status = 0')
+                                ->order('id desc')
+                                ->paginate(5);
            
         $this->assign('list',$list);
         $this->assign('title','成绩回收站');
@@ -157,10 +160,8 @@ class Score extends Base{
         } else {
             $key = $this->request->param('id','','intval');
         }
-        
-        $re = ScoreModel::where(['id'=>$key])->update(['status'=>0]);
-        
-        if($re){
+    
+        if(Db::name('score')->where(['id'=>$key])->update(['status' => 0])){
             $this->success('已成功删除到回收站');
         } else {
             $this->error('删除失败,请重试');
@@ -176,13 +177,12 @@ class Score extends Base{
         } else {
             $key = $this->request->param('id','','intval');            
         }
-        
-        $re = ScoreModel::where(['id'=>$key])->update(['status'=>1]);
-        
-        if($re){
+    
+        if(Db::name('score')->where(['id'=>$key])->update(['status'=>1])){
             $this->success('已成功还原',url('index'));
         } else {
             $this->error('还原失败,请重试');
+            
         }
     }
         
@@ -195,10 +195,8 @@ class Score extends Base{
         } else {
             $key = $this->request->param('id','','intval');
         }
-        
-        $re = ScoreModel::destroy($key);
-        
-        if($re){
+    
+        if(Db::name('score')->where(['id'=>$key])->delete()){
             $this->success('已彻底删除',url('index'));
         } else {
             $this->error('删除失败,请重试');
@@ -208,15 +206,16 @@ class Score extends Base{
     // 添加页面选择学生
     public function getStudent() {
         $where['class_id'] = $this->request->param('id',0,'intval');
+        $where['status'] = 1;
         
-        $result = ['code'=>0, 'msg'=>'请求失败,请重试', 'data'=>[]];
-        $result['data'] = Student::field('id,name')->where($where)->select();
+        $result = ['code'=>0, 'msg'=>'请求失败,请重试', 'data'=>false];
+        $result['data'] = Db::name("student")->field('id,name')->where($where)->select();
         
-        if($result['data']){
-            $result['code'] = 1;
-            $result['msg'] = "已成功返回数据";
+        if($result['data'] === false){
             return json($result);
         } else {
+            $result['code'] = 1;
+            $result['msg'] = "已成功返回数据";
             return json($result);
         }
     
