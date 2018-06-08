@@ -1,43 +1,90 @@
-{extend name="public/base" /}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>登录页面</title>
+</head>
+	<script type="text/javascript" src="/public/static/js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="/public/static/js/jquery.validate.js"></script>
+	<script type="text/javascript" src="/public/static/js/messages_zh.js"></script>
+	<link rel="stylesheet" href="/public/static/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="/public/static/css/newfile.css" />
 
-{block name="head-js" }  
+<script>
 
-{/block}
-
-{block name="content"}
-		<div class="container">
-			
-			<form action="{:url('login')}" method="post">
-				<div class="row">
-					<div class="form-gournd">
-						 <label class="col-md-2 text-right" for="userName" >用户名 : </label>
-						 <div class="col-sm-4">
-						 	<input class="form-control col-md-3" name="username" type="text"  id="userName" placeholder="用户名">
-						 </div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="form-gournd">
-						 <label class="col-md-2 text-right" for="userName" >密码 : </label>
-						 <div class="col-sm-4">
-						 	<input class="form-control col-md-3" name="password" type="password"  id="userName" placeholder="输入密码">
-						 </div>
-					</div>			
-				</div>
-				<div class="row">
-					<div class="form-gournd text-right col-md-3" >
-						 <input class="btn btn-primary" type="submit" value="登录"/>   
-					</div>
-					<div class="form-gournd text-left col-md-1" >
-						<button class="btn btn-default" type="button">注册</button>			
-					</div>
-					<div class="form-gournd text-left col-md-1" >
-						<input class="form-control" type="text" name="verify" placeholder="输入验证码" />			
-					</div>
-					<div class="form-gournd text-left col-md-2" >
-						<img id="verify" src="{:captcha_src()}" onclick="$(this).attr('src','{:captcha_src()}/rand/' + Math.random());" alt="验证码" />						
-					</div>
-				</div>
-			</form>
+	$.validator.setDefaults({
+	    submitHandler: function() {
+	      form.submit();
+	    }
+	});
+	
+	$().ready(function() {
+	    $("#login-form").validate({
+	    	
+    		errorPlacement: function(error, element) {
+    			// Append error within linked label
+    			$( element )
+    				.closest( "form" )
+    					.find( "label[for='" + element.attr( "id" ) + "']" ).next()
+    						.append( error );
+    		},
+				
+	    	messages:{
+	    		username:{
+	    			required:'请输入用户名',
+	    			minlength:'长度不能小于3'
+	    		},
+	    		password:{
+	    			required:'请输入密码'
+	    		},
+	    		verify:{
+	    			required:'填写验证码'
+	    		}
+	    		
+	    	}
+	    });
+	});
+	
+</script>
+	
+	
+<body>
+	
+	
+	<form action="{:url('login')}" method="post" id="login-form">
+	<div class="login-ctn container ">
+		<div class="row">
+			<div class="col-md-12 text-center">
+				<h2>后台登陆</h2>
+			</div>
 		</div>
-{/block}
+		<div class="row">
+			<label class="col-md-2 text-right" for="username">用户名 : </label>
+			<div class="col-md-6 text-left" >
+				<input type="text" class="form-control" name="username" id="username" placeholder="请输入用户名" minlength=3 required/>
+			</div>
+		</div>
+		<div class="row">
+			<label class="col-md-2 text-right" for="password">密码 : </label>
+			<div class="col-md-6 text-left" >
+				<input type="text" class="form-control" name="password" placeholder="请输入密码" id="password"  required />
+			</div>
+		</div>
+		<div class="row">
+			<label class="col-md-2 text-right" for="verify">验证码 : </label>
+			<div class="col-md-4 text-left" >
+				<input type="text" class="form-control" name="verify" placeholder="右图验证码" id="verify" required/>
+			</div>
+			<div class="col-md-3 text-left verify-img">
+				<img src="{:captcha_src()}" onclick="$(this).attr('src','{:captcha_src()}/rand/' + Math.random());" alt="单击刷新验证码" />
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12 text-center">
+				<input type="submit" class="btn btn-primary" id="submit" value="登录" /> 
+			</div>
+		</div>
+	</div>
+	</form>
+</body>
+</html>

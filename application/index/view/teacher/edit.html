@@ -98,13 +98,13 @@ function uplode() {
 					<div class="form-group">
 						<label for="inputPublishtime" class="col-sm-2 control-label">入学时间</label>
 						<div class="col-sm-3">
-							<input type="text" class="form-control" name="create_time" id="inputPublishtime" value="{:date('Y-m-d H:i:s',$teacher['create_time'])}">
+							<input type="text" class="form-control" name="create_time" id="inputPublishtime" value="{$teacher['create_time']}">
 			                <script type="text/javascript">
 			                    Calendar.setup({
 			                        weekNumbers: true,
 			                        inputField : "inputPublishtime",
 			                        trigger    : "inputPublishtime",
-			                        dateFormat: "%Y-%m-%d %H:%M:%S",
+			                        dateFormat: "%Y-%m-%d ",
 			                        showTime: true,
 			                        minuteStep: 1,
 			                        onSelect   : function() {this.hide();}

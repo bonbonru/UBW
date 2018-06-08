@@ -7,6 +7,7 @@ use think\Db;
 use app\index\validate\Teacher as TeacherValidate;
 use app\index\model\Teacher as TeacherModel;
 use app\index\model\Grade;
+use think\db\exception\DataNotFoundException;
 
 class Teacher extends Base {
     
@@ -42,8 +43,6 @@ class Teacher extends Base {
         $id || $this->error('参数异常');
         
         $teacher = TeacherModel::get($id);
-        
-        echo $teacher->getData('sex');
         
         if(!$teacher){
             $this->error('页面错误');
@@ -193,7 +192,7 @@ class Teacher extends Base {
     public function getInfo() {
         $re = ['status'=>1,'msg'=>'成功','data'=>[]];
         
-        $id = $this->request->param('id',41,'intval');
+        $id = $this->request->param('id',42,'intval');
         
         if(empty($id)){
             $re['status'] = 203;
@@ -207,43 +206,38 @@ class Teacher extends Base {
         
         $className = Grade::where('teacher_id|english_id|language_id|math_id',$id)
                           ->field('id,name,teacher_id,language_id,math_id,english_id')
+                          ->order('')
                           ->select();
-        $array = [];    
+        
+        $array = [];
         foreach ($className as $v) {
-            if($v['teacher_id'] == 41){
-                $array['teacher_id'][$v['id']] = $v['name']; 
+            if($v['teacher_id'] == $id){
+                $array[0][0] = '班主任';
+                $array[0][$v['id']] = $v['name'];
             }
-            if($v['english_id'] == 41){
-                $array['english_id'][$v['id']] = $v['name'];
+            if($v['language_id'] == $id){
+                $array[1][0] = '语文教师';
+                $array[1][$v['id']] = $v['name'];
             }
-            if($v['language_id'] == 41){
-                $array['language_id'][$v['id']] = $v['name'];
+            if($v['math_id'] == $id){
+                $array[2][0] = '数学教师';
+                $array[2][$v['id']] = $v['name'];
             }
-            if($v['teacher_id'] == 41){
-                $array['math_id'][$v['id']] = $v['name'];
+            if($v['english_id'] == $id){
+                $array[3][0] = '英语教师';
+                $array[3][$v['id']] = $v['name'];
             }
         }
         
-        
-        dump($array); 
-        $c_db = Db::name('class');
-        $for['teacher'] = $c_db->field('name')->where('teacher_id = '.$id)->select();
-        $for['english'] = $c_db->field('id , name')->where('english_id = '.$id)->select();
-        $for['language'] = $c_db->field('id , name')->where('language_id = '.$id)->select();
-        $for['math']= $c_db->field('id , name')->where('math_id = '.$id)->select();
-    
-        $info['create_time'] = date('Y-m-d',$info['create_time']);
-        $info['sex'] = $this->sex[$info['sex']];
-    
         $date = explode('-',$info['age']);
         $on = explode('-',date('Y-m-d',time()));
-        $info['onAge'] = $on[0] - $date[0];
+        $info->onAge = $on[0] - $date[0];
         if(($on[1]*100+$on[2])>($date[1]*100+$date[2])){
-            $info['onAge']++;
+            $info->onAge++;
         }
-        dump($for); exit;
+        
         $re['data'] = $info;
-        $re['for'] = $for;
+        $re['for'] = $array;
         
         return json($re);
     }

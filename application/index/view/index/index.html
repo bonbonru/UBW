@@ -19,10 +19,22 @@
 
 <script>
 	$(function(){
+		// 左菜单选中效果 
 		$('.list-group>a').click(function(){
 			$(this).addClass('active').siblings().removeClass('active');
 		})
+		// 隐藏左菜单
+		$('#i_hide_menu').click(function(){
+			if($("body").attr("class")=="showmenu"){
+				$("body").attr("class","hidemenu");
+				$(this).html("显示菜单");
+			}else{
+				$("body").attr("class","showmenu");
+				$(this).html("隐藏菜单");
+			}
+		})
 	})
+	
 </script>
 
 </head>
@@ -32,20 +44,21 @@
 <div class="head">
 <div class="top_logo"> <img src="/public/static/images/main/logo.png"/> </div>
      <div class="nav" id="nav">   
-      <ul>
-      	{foreach name='menu' key='k' item='v'}
+      <ul>	
+      	{foreach $menu as $k=>$v }
 		  <li id="menu_{$k}"><a {empty name='k'}class='thisclass'{/empty} href="#" _for="left_menu_{$k}"><b>{$v.name}</b></a></li>
 		{/foreach}
       </ul>
     </div>
 	 <div class="top_link">
-      <ul>
+	    <ul>
 	    <li id="i_self">{$Think.session.yang_adm_username}</li>
-		<li id="i_hide_menu"><a href="#" id="togglemenu">隐藏菜单</a></li>
-        <li id="i_home"><a href="{:config('CFG_WEBURL')}" target="_blank">首页</a></li> 
-        <li id="i_help"><a href="{:go_link('http://www.xyhcms.com/')}" target="_blank">帮助</a></li>    
-        <li id="i_exit"><a href="{:url('Login/logout')}" target="_top">退出</a></li>		
-      </ul>
+		<li id="i_hide_menu"><a href="" id="togglemenu">隐藏菜单</a></li>
+        <li id="i_home"><a href="#" target="_blank">首页</a></li> 
+        <li id="i_help"><a href="http://www.xyhcms.com" target="_blank">帮助</a></li>    
+        <li id="i_exit"><a href="{:url('logout')}" target="_top">退出</a></li>		
+      </ul>		
+      
     </div>
 </div>
 <!-- header end -->

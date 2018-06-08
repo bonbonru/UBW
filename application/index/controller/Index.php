@@ -3,6 +3,7 @@
 namespace app\index\Controller;
 
 use Common\Lib\Category;
+use think\facade\Session;
 use think\Db;
 
 class Index extends Base {
@@ -50,5 +51,21 @@ class Index extends Base {
 		return $this->fetch();		
 		
 	}
+	
+	public function logout() {
+	    
+	    session::delete('userid');
+	    session::delete('yang_adm_username');
+	    session::delete('yang_adm_realname');
+	    session::delete('yang_adm_username');
+	    session::delete('yang_adm_department');
+	    session::delete('yang_adm_group_id');
+	    session::delete('yang_adm_time');
+	    session::delete('yang_adm_login_ip');
+	    
+	    return $this->success('已成功注销');
+	    
+	}
+	
 
 }

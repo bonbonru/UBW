@@ -10,6 +10,11 @@ class Grade extends Model {
     protected $pk = "id";
     protected $insert = [ 'status' => 1 ];
     
+    public function getGradeAttr($v) {
+        $grade = [1=>'小学',2=>'初中'];
+        return $grade[$v];
+    }
+    
     // 全局范围查询
     public function base($query) {
         $query->where('status = 1');

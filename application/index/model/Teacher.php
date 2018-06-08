@@ -14,6 +14,9 @@ class Teacher extends Model{
         $sex = [ 0 => '女' , 1 => '男' ];
         return $sex[$v];
     }
+    public function getCreatetimeAttr($v){
+        return date("Y-m-d",$v);
+    }
     
     // 全局范围查询
     public function base($query) {
